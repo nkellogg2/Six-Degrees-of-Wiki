@@ -33,12 +33,15 @@ private:
     Node** graphArray;
 
     unsigned int hashFunction(string name, unsigned int size);
-    void insert(string name);
+    void insertHead(string name);
     int find(string name);
+    void deleteNode(Node* n);
 
 public:
     Graph();
+    ~Graph();
     void inputGraph(string fileName);
+    void printEdges(string name);
 };
 
 #endif //WIKIPEDIA_GRAPH_H
