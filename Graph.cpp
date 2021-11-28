@@ -38,6 +38,10 @@ void Graph::insertHead(string name)
     // Find first open spot at or after the initial location
     while (!graphArray[location]->pageName.empty())
     {
+        if (graphArray[location]->pageName == name)
+        {
+            return;
+        }
         location++;
         location = location % vertices;
     }
@@ -119,7 +123,9 @@ void Graph::inputGraph(string fileName)
         // Set the graph to the correct size and update vertices;
         // Size factor adds extra space to reduce likelihood of collisions
         lines = lines / 3;
-        vertices = (int)(lines * sizeFactor);
+
+        //Sets the number of data points we'll have. When using larger csv file we can change it
+        vertices = 100000;
         delete[] graphArray;
         graphArray = new Node*[vertices];
         for (int i = 0; i < vertices; i ++)
@@ -172,6 +178,9 @@ void Graph::inputGraph(string fileName)
                                 l[i] = ' ';
                         }
 
+                        //Inserts links into array
+                        insertHead(l);
+                        
                         // To-Do: Don't insert if it is a 'File:...' or other special link such as pronunciation
 
                         currentNode->next = new Node(l, w);
