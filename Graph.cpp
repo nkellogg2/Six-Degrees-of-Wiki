@@ -5,32 +5,15 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <functional>
 #include <unordered_set>
 using std::string;
 
-// Copied Hash function from the UnorderedMap Project
-unsigned int Graph::hashFunction(string name, unsigned int size)
+unsigned int Graph::hashFunction(string name)
 {
-    unsigned int code = 0;
-    unsigned int temp;
-    for (int i = 0; i < name.length(); i++)
-    {
-        int val = name[i];
-        if (i % 2 == 0)
-        {
-            temp = (code << 7) ^ val ^ (code >> 3);
-        }
-        else
-        {
-            temp = (code << 11) ^ val ^ (code >> 5);
-            temp = ~temp;
-        }
-        code = code ^ temp;
-        i++;
-    }
-    code = code << 1;
-    code = code >> 1;
-    return code % size;
+    //Standard C++ Hash Function
+    std::hash<std::string> str_hash;
+    return (str_hash(name) % vertices);
 }
 
 bool Graph::insertHead(string name)
@@ -38,7 +21,7 @@ bool Graph::insertHead(string name)
     if (pages.count(name) == 0)
     {
         // Get original hash value for the page name
-        unsigned int location = hashFunction(name, vertices);
+        unsigned int location = hashFunction(name);
 
         // Find first open spot at or after the initial location
         while (!graphArray[location]->pageName.empty())
@@ -62,7 +45,7 @@ bool Graph::insertHead(string name)
 int Graph::find(string name)
 {
     // Get original hash value for the page name
-    unsigned int location = hashFunction(name, vertices);
+    unsigned int location = hashFunction(name);
 
     // Used to detect a loop, only happens when name does not exist in the graph
     unsigned int loc = location;
@@ -269,8 +252,8 @@ void Graph::printEdges(string name)
 
 void Graph::printBFSPath(string start, string destination)
 {
-    int src = hashFunction(start, vertices);
-    int dest = hashFunction(destination, vertices);
+    int src = hashFunction(start);
+    int dest = hashFunction(destination);
 
     //If index has been hashed by another article, loop until proper one found
     while (graphArray[dest]->pageName != destination) {
@@ -305,7 +288,7 @@ void Graph::printBFSPath(string start, string destination)
         //Loops though all links on currPage
         for (auto i = graphArray[currPage]; i != nullptr; i = i->next)
         {
-            int currIndex = hashFunction(i->pageName, vertices);
+            int currIndex = hashFunction(i->pageName);
 
             if (visited.count(currIndex) == 0)
             {
