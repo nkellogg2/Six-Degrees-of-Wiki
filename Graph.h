@@ -1,6 +1,8 @@
 #ifndef WIKIPEDIA_GRAPH_H
 #define WIKIPEDIA_GRAPH_H
 #include <string>
+#include <unordered_set>
+#include <vector>
 using std::string;
 
 class Graph
@@ -28,19 +30,21 @@ private:
         };
     };
 
+    int inserted;
     int vertices;
     double sizeFactor;
     Node** graphArray;
+    std::unordered_set<string> pages;
 
     unsigned int hashFunction(string name, unsigned int size);
-    void insertHead(string name);
+    bool insertHead(string name);
     int find(string name);
     void deleteNode(Node* n);
 
 public:
     Graph();
     ~Graph();
-    void inputGraph(string fileName);
+    void inputGraph(std::vector<string> fileNames);
     void printEdges(string name);
     void printBFSPath(string start, string destination);
 };

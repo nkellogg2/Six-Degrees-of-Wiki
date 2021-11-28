@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <unordered_set>
 using std::string;
 
 // Copied Hash function from the UnorderedMap Project
@@ -32,23 +33,30 @@ unsigned int Graph::hashFunction(string name, unsigned int size)
     return code % size;
 }
 
-void Graph::insertHead(string name)
+bool Graph::insertHead(string name)
 {
-    // Get original hash value for the page name
-    unsigned int location = hashFunction(name, vertices);
-
-    // Find first open spot at or after the initial location
-    while (!graphArray[location]->pageName.empty())
+    if (pages.count(name) == 0)
     {
-        if (graphArray[location]->pageName == name)
-        {
-            return;
-        }
-        location++;
-        location = location % vertices;
-    }
+        // Get original hash value for the page name
+        unsigned int location = hashFunction(name, vertices);
 
-    graphArray[location]->pageName = name;
+        // Find first open spot at or after the initial location
+        while (!graphArray[location]->pageName.empty())
+        {
+            if (graphArray[location]->pageName == name)
+            {
+                return false;
+            }
+            location++;
+            location = location % vertices;
+        }
+
+        graphArray[location]->pageName = name;
+        pages.insert(name);
+        inserted++;
+        return true;
+    }
+    return false;
 }
 
 int Graph::find(string name)
@@ -86,6 +94,7 @@ void Graph::deleteNode(Node* n)
 
 Graph::Graph()
 {
+    inserted = 0;
     vertices = 0;
     sizeFactor = 1.5; // NEVER below 1
     graphArray = new Node*[1];
@@ -100,40 +109,56 @@ Graph::~Graph()
     delete[] graphArray;
 }
 
-void Graph::inputGraph(string fileName)
+void Graph::inputGraph(std::vector<string> fileNames)
 {
-    // Open the file
+    // File reading object
     std::ifstream input;
-    input.open(fileName);
 
-    // Read how many lines, then divide by three
-    // Not super efficient but this will mean no resizing
-    string line;
+    // Reading the input size
+    int links = 0;
     int lines = 0;
-    if (input.is_open())
+    for (int i = 0; i < fileNames.size(); i++)
     {
-        while (!input.eof())
+        // Open the files
+        input.open(fileNames[i]);
+
+        // Read how many lines, then divide by three
+        // Not super efficient but this will mean no resizing
+        string line;
+        if (input.is_open())
         {
-            getline(input, line);
-            lines++;
+            while (!input.eof())
+            {
+                getline(input, line);
+                lines++;
+            }
+        }
+        else
+        {
+            std::cout << "Sorry, couldn't open \"" << fileNames[i] << "\""<< std::endl;
+            std::cout << std::endl;
         }
 
-        // Close and reopen to actually read data
+        // Close file for next loop
         input.close();
-        input.open(fileName);
+    }
 
-        // Set the graph to the correct size and update vertices;
-        // Size factor adds extra space to reduce likelihood of collisions
-        lines = lines / 3;
+    // Set the graph to the correct size and update vertices;
+    // Size factor adds extra space to reduce likelihood of collisions
+    lines = lines / 3;
+    vertices = (int)(lines * sizeFactor);
+    delete[] graphArray;
+    graphArray = new Node*[vertices];
+    for (int i = 0; i < vertices; i ++)
+    {
+        graphArray[i] = new Node;
+    }
 
-        //Sets the number of data points we'll have. When using larger csv file we can change it
-        vertices = 100000;
-        delete[] graphArray;
-        graphArray = new Node*[vertices];
-        for (int i = 0; i < vertices; i ++)
-        {
-            graphArray[i] = new Node;
-        }
+    // Actually read the data
+    for (int i = 0; i < fileNames.size(); i++)
+    {
+        // Open the file
+        input.open(fileNames[i]);
 
         // Read data
         // Line Types:
@@ -141,70 +166,81 @@ void Graph::inputGraph(string fileName)
         // 1 - List of Links
         // 2 - Spacer
         int lineType = 0;
+        string line;
         string page;
-        while (!input.eof())
+        bool duplicate = false;
+        if (input.is_open())
         {
-            if (lineType == 0)
+            while (!input.eof())
             {
-                getline(input, line);
-                insertHead(line);
-                page = line;
-            }
-            // Help in this section from: https://stackoverflow.com/questions/37957080/can-i-use-2-or-more-delimiters-in-c-function-getline
-            if (lineType == 1)
-            {
-                // Find the page, make sure it exists
-                int index = find(page);
-                if (index != -1)
+                if (lineType == 0)
                 {
-                    // Get the entire line input
                     getline(input, line);
-
-                    // Create string stream to read through only the comma separated values
-                    std::stringstream currentLine(line);
-                    string l;
-
-                    // Get the head of the list
-                    Node* currentNode = graphArray[index];
-
-                    // Count weight. Weight is the number of links above it on the page + 1;
-                    int w = 1;
-
-                    // Input data
-                    while (getline(currentLine, l, ','))
+                    duplicate = !insertHead(line);
+                    page = line;
+                }
+                // Help in this section from: https://stackoverflow.com/questions/37957080/can-i-use-2-or-more-delimiters-in-c-function-getline
+                if (lineType == 1)
+                {
+                    // First make sure this page isn't a duplicate page
+                    if (!duplicate)
                     {
-                        // Replace underline with spaces
-                        for (int i = 0; i < l.length(); i++)
+                        // Find the page, make sure it exists
+                        int index = find(page);
+                        if (index != -1)
                         {
-                            if (l[i] == '_')
-                                l[i] = ' ';
+                            // Get the entire line input
+                            getline(input, line);
+
+                            // Create string stream to read through only the comma separated values
+                            std::stringstream currentLine(line);
+                            string l;
+
+                            // Get the head of the list
+                            Node* currentNode = graphArray[index];
+
+                            // Count weight. Weight is the number of links above it on the page + 1;
+                            int w = 1;
+
+                            // Input data
+                            while (getline(currentLine, l, ','))
+                            {
+                                // Replace underline with spaces
+                                for (int j = 0; j < l.length(); j++)
+                                {
+                                    if (l[j] == '_')
+                                        l[j] = ' ';
+                                }
+
+                                // To-Do: Don't insert if it is a 'File:...' or other special link such as pronunciation
+
+                                currentNode->next = new Node(l, w);
+                                currentNode = currentNode->next;
+                                w++;
+                                links++;
+                            }
                         }
-
-                        //Inserts links into array
-                        insertHead(l);
-                        
-                        // To-Do: Don't insert if it is a 'File:...' or other special link such as pronunciation
-
-                        currentNode->next = new Node(l, w);
-                        currentNode = currentNode->next;
-                        w++;
                     }
                 }
-            }
-            // Empty Line, just getline to skip
-            if (lineType == 2)
-            {
-                getline(input, line);
-            }
+                // Empty Line, just getline to skip
+                if (lineType == 2)
+                {
+                    getline(input, line);
+                }
 
-            lineType++;
-            lineType = lineType % 3;
+                lineType++;
+                lineType = lineType % 3;
+            }
         }
+
+        // Close file for next loop
+        input.close();
     }
-    else
-    {
-        std::cout << "Sorry, can't open " << fileName << std::endl;
-    }
+
+    std::cout << "Size of the graph: " << vertices << std::endl;
+    std::cout << "Pages inserted: " << inserted << std::endl;
+    std::cout << "Links added: " << links << std::endl;
+    std::cout << std::endl;
 }
 
 void Graph::printEdges(string name)
@@ -212,10 +248,13 @@ void Graph::printEdges(string name)
     int index = find(name);
 
     if (index == -1)
-        std::cout << "Sorry, " << name << " could not be found in this graph" << std::endl;
+    {
+        std::cout << "Sorry, \"" << name << "\" could not be found in this graph" << std::endl;
+    }
     else
     {
-        std::cout << "Links on the page " << name << ":" << std::endl;
+        std::cout << "Links on the page \"" << name << "\":" << std::endl;
+        std::cout << std::endl;
 
         Node* currentNode = graphArray[index];
 
