@@ -1,25 +1,31 @@
 import requests, time
 from collections import deque
 from bs4 import BeautifulSoup
-
+   
 def isValidLink(link):
     if 'class' not in link.attrs.keys() and link.attrs['href'][:5] == "/wiki" and len(link.contents) == 1 and link.attrs['href'][6:].find('/') == -1 and link.attrs['href'].find(':') == -1:
         return True
     return False
 
 def printPages(start_page, n):
-    linkQueue = deque()
+    q = deque()
+    visited = set()
     max = n
-    index = 0
+    index = 1
     prefix = "https://en.wikipedia.org"
-    url=prefix + start_page
+    url = prefix + start_page
     
-    linkQueue.append(url)
+    q.append(url)
 
-    start = time.time()
-    with open('compare.csv', 'a',encoding='utf-8') as file:
-        while len(linkQueue) != 0:
-            currURL = linkQueue.popleft()
+    start = time.perf_counter()
+    with open('compare.csv', 'a', encoding='utf-8') as file:
+        while len(q) != 0:
+            currURL = q.popleft()
+            
+            if hash(currURL) in visited:
+                continue
+            else:
+                visited.add(hash(currURL))
 
             response = requests.get(currURL)
             time.sleep(0.1)
@@ -27,13 +33,12 @@ def printPages(start_page, n):
             soup = BeautifulSoup(response.content, 'html.parser')
 
             file.write(soup.find(id='firstHeading').text + '\n')
-
             allLinks = soup.find(id="bodyContent").find_all("p")
 
             for p in allLinks:
                 for link in p.findAll("a"):
                     if isValidLink(link):
-                        linkQueue.append(prefix + link.attrs['href'])
+                        q.append(prefix + link.attrs['href'])
                         file.write(link.attrs['href'][6:] + ',')
                         index += 1
 
@@ -48,7 +53,7 @@ def printPages(start_page, n):
             
             file.write('\n\n')
 
-    end = time.time()
+    end = time.perf_counter()
 
     print("Time consumed in working:", end - start)
-    print("Queue Size:",len(linkQueue))
+    print("Queue Size:", len(q))
