@@ -1,5 +1,7 @@
 #include "Graph.h"
 #include <string>
+#include <queue>
+#include <set>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -224,4 +226,57 @@ void Graph::printEdges(string name)
         }
     }
     std::cout << std::endl;
+}
+
+void Graph::printBFSPath(string start, string destination)
+{
+    int src = hashFunction(start, vertices);
+    int dest = hashFunction(destination, vertices);
+
+    //If index has been hashed by another article, loop until proper one found
+    while (graphArray[dest]->pageName != destination) {
+        dest++;
+        if (dest > vertices) {
+            std::cout << "Path to " + destination + " not found!" << std::endl; 
+        }
+    }
+
+    std::queue<std::vector<std::pair<int, std::string>>> q;
+    std::set<int> visited;
+    std::vector<std::pair<int, std::string>> path; 
+
+    path.push_back(make_pair(src, start));
+    visited.insert(src);
+    q.push(path);
+    visited.insert(src);
+
+    while (!q.empty())
+    {
+        path = q.front();
+        q.pop();
+        int currPage = path[(path.size() - 1)].first;
+
+        if (currPage == dest) {
+            for (auto page : path) {
+                std::cout << page.second << std::endl; 
+            }
+            break;
+        }
+
+        //Loops though all links on currPage
+        for (auto i = graphArray[currPage]; i != nullptr; i = i->next)
+        {
+            int currIndex = hashFunction(i->pageName, vertices);
+
+            if (visited.count(currIndex) == 0)
+            {
+                visited.insert(currIndex);
+
+                //New vector made using current path and link added to path
+                std::vector<std::pair<int, std::string>> nextPath = path;
+                nextPath.push_back(make_pair(currIndex,i->pageName));
+                q.push(nextPath);
+            }
+        }
+    }
 }

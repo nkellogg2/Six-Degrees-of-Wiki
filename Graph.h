@@ -42,6 +42,7 @@ public:
     ~Graph();
     void inputGraph(string fileName);
     void printEdges(string name);
+    void printBFSPath(string start, string destination);
 };
 
 #endif //WIKIPEDIA_GRAPH_H
