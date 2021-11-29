@@ -252,25 +252,15 @@ void Graph::printEdges(string name)
 
 void Graph::printBFSPath(string start, string destination)
 {
-    int src = hashFunction(start);
-    int dest = hashFunction(destination);
-
-    //If index has been hashed by another article, loop until proper one found
-    while (graphArray[dest]->pageName != destination) {
-        dest++;
-        if (dest > vertices) {
-            std::cout << "Path to " + destination + " not found!" << std::endl; 
-        }
-    }
-
+    int src = find(start);
+    int dest = find(destination);
     std::queue<std::vector<std::pair<int, std::string>>> q;
     std::set<int> visited;
-    std::vector<std::pair<int, std::string>> path; 
+    std::vector<std::pair<int, std::string>> path;
 
     path.push_back(make_pair(src, start));
     visited.insert(src);
     q.push(path);
-    visited.insert(src);
 
     while (!q.empty())
     {
@@ -278,14 +268,6 @@ void Graph::printBFSPath(string start, string destination)
         q.pop();
         int currPage = path[(path.size() - 1)].first;
 
-        if (currPage == dest) {
-            for (auto page : path) {
-                std::cout << page.second << std::endl; 
-            }
-            break;
-        }
-
-        //Loops though all links on currPage
         for (auto i = graphArray[currPage]; i != nullptr; i = i->next)
         {
             int currIndex = hashFunction(i->pageName);
@@ -298,7 +280,15 @@ void Graph::printBFSPath(string start, string destination)
                 std::vector<std::pair<int, std::string>> nextPath = path;
                 nextPath.push_back(make_pair(currIndex,i->pageName));
                 q.push(nextPath);
+
+                if (graphArray[currIndex]->pageName == destination) {
+                    for (auto page : nextPath) {
+                        std::cout << page.second << std::endl;
+                    }
+                    return;
+                }
             }
         }
     }
+    std::cout << "Path to " << destination << " Not Found!" << std::endl;
 }
