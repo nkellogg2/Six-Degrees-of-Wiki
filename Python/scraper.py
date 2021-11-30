@@ -21,7 +21,6 @@ def printPages(start_page, n):
     with open('compare.csv', 'a', encoding='utf-8') as file:
         while len(q) != 0:
             currURL = q.popleft()
-            
             if hash(currURL) in visited:
                 continue
             else:
@@ -33,6 +32,7 @@ def printPages(start_page, n):
             soup = BeautifulSoup(response.content, 'html.parser')
 
             file.write(soup.find(id='firstHeading').text + '\n')
+
             allLinks = soup.find(id="bodyContent").find_all("p")
 
             for p in allLinks:
@@ -40,14 +40,8 @@ def printPages(start_page, n):
                     if isValidLink(link):
                         q.append(prefix + link.attrs['href'])
                         file.write(link.attrs['href'][6:] + ',')
-                        index += 1
+            index += 1
 
-                    if index > max:
-                        break
-
-                if index > max:
-                    break
-            
             if index > max:
                 break
             
