@@ -36,7 +36,7 @@ private:
     Node** graphArray;
     std::unordered_set<string> pages;
 
-    unsigned int hashFunction(string name, unsigned int size);
+    unsigned int hashFunction(string name);
     bool insertHead(string name);
     int find(string name);
     void deleteNode(Node* n);
