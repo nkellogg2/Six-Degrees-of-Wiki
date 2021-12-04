@@ -1,6 +1,10 @@
 #include <iostream>
 #include <vector>
 #include "Graph.h"
+#include "SixDegrees.h"
+#include "MakeGraph.h"
+
+using namespace GUITesting;
 
 bool isValidNum(string num);
 void bfsSearch(Graph* g);
@@ -9,6 +13,13 @@ void listPages(Graph* g);
 void readFiles(Graph* g, std::vector<string>& files);
 
 int main() {
+    MakeGraph setupForm;
+    setupForm.ShowDialog();
+    /*
+    SixDegrees form;
+    form.ShowDialog();
+    */
+
     Graph* g = new Graph;
 
     std::vector<string> fileNames;
@@ -114,20 +125,29 @@ void listPages(Graph* g)
 
 void readFiles(Graph* g, std::vector<string>& files)
 {
+    // String^ fileNumInput;
+    // std::cout << "How many files would you like to use to build this graph?" << std::endl;
+    // use txt_numFiles here V
+    // fileNumInput = setupForm.txt_numFiles->Text;
     string fileNum;
-    std::cout << "How many files would you like to use to build this graph?" << std::endl;
+
     getline(std::cin, fileNum);
     std::cout << std::endl;
 
     while (!isValidNum(fileNum))
     {
-        std::cout << "It seems you didn't enter a valid number, please input a positive number:" << std::endl;
+        // display "Invalid Number" in gui
+        // std::cout << "It seems you didn't enter a valid number, please input a positive number:" << std::endl;
         getline(std::cin, fileNum);
         std::cout << std::endl;
     }
 
+    // remove invalid number msg if present
+    // hide "OK" button
+
     int numFiles = std::stoi(fileNum);
 
+    // show prompt and box 
     for (int i = 0; i < numFiles; i++)
     {
         string fileName;

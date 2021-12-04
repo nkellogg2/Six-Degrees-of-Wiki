@@ -79,6 +79,7 @@ Graph::Graph()
 {
     inserted = 0;
     vertices = 0;
+    numLinks = 0;
     sizeFactor = 1.5; // NEVER below 1
     graphArray = new Node*[1];
 }
@@ -92,13 +93,25 @@ Graph::~Graph()
     delete[] graphArray;
 }
 
+int Graph::getNumVertices() {
+    return vertices;
+}
+
+int Graph::getNumLinks() {
+    return numLinks;
+}
+
+int Graph::getPagesInserted() {
+    return inserted;
+}
+
 void Graph::inputGraph(std::vector<string> fileNames)
 {
     // File reading object
     std::ifstream input;
 
     // Reading the input size
-    int links = 0;
+    numLinks = 0;
     int lines = 0;
     for (int i = 0; i < fileNames.size(); i++)
     {
@@ -200,7 +213,7 @@ void Graph::inputGraph(std::vector<string> fileNames)
                                 currentNode->next = new Node(l, w);
                                 currentNode = currentNode->next;
                                 w++;
-                                links++;
+                                numLinks++;
                             }
                         }
                     }
@@ -222,8 +235,26 @@ void Graph::inputGraph(std::vector<string> fileNames)
 
     std::cout << "Size of the graph: " << vertices << std::endl;
     std::cout << "Pages inserted: " << inserted << std::endl;
-    std::cout << "Links added: " << links << std::endl;
+    std::cout << "Links added: " << numLinks << std::endl;
     std::cout << std::endl;
+}
+
+std::vector<string> Graph::getEdges(string name) {
+    std::vector<string> edges;
+    int index = find(name);
+
+    if (index == -1) {
+        return edges;
+    }
+    else {
+        Node* currentNode = graphArray[index];
+
+        while (currentNode->next != nullptr) {
+            currentNode = currentNode->next;
+            edges.push_back(currentNode->pageName);
+        }
+        return edges;
+    }
 }
 
 void Graph::printEdges(string name)
