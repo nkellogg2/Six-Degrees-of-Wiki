@@ -261,7 +261,7 @@ void Graph::printBFSPath(string start, string destination)
         {
             int currIndex = find(i->pageName);
 
-            if (visited.count(currIndex) == 0)
+            if (currIndex != -1 && visited.count(currIndex) == 0)
             {
                 visited.insert(currIndex);
 
