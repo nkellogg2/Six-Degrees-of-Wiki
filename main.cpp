@@ -5,6 +5,7 @@
 bool isValidNum(string num);
 void bfsSearch(Graph* g);
 void dijkstras(Graph* g);
+void bellmanford(Graph* g);
 void listPages(Graph* g);
 void readFiles(Graph* g, std::vector<string>& files);
 
@@ -42,7 +43,7 @@ int main() {
                 bfsSearch(g);
                 break;
             case '3' :
-                dijkstras(g);
+                bellmanford(g);
                 break;
             case '4' :
                 delete g;
@@ -101,7 +102,19 @@ void dijkstras(Graph* g)
     std::cout << "Enter the name of the destination page:" << std::endl;
     getline(std::cin, dest);
     std::cout << std::endl;
-    //g->printDijkstrasPath(start, dest);
+    // g->printDijkstrasPath(start, dest);
+}
+
+void bellmanford(Graph* g) {
+    string start;
+    std::cout << "Enter the name of the starting page:" << std::endl;
+    getline(std::cin, start);
+    std::cout << std::endl;
+    string dest;
+    std::cout << "Enter the name of the destination page:" << std::endl;
+    getline(std::cin, dest);
+    std::cout << std::endl;
+    g->bellmanFord(start, dest);
 }
 
 void listPages(Graph* g)

@@ -1,12 +1,14 @@
 #include "Graph.h"
 #include <string>
+#include <stack>
 #include <queue>
 #include <set>
+#include <unordered_set>
+#include <unordered_map>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <functional>
-#include <unordered_set>
 using std::string;
 
 unsigned int Graph::hashFunction(string name)
@@ -16,30 +18,24 @@ unsigned int Graph::hashFunction(string name)
     return (str_hash(name) % vertices);
 }
 
-bool Graph::insertHead(string name)
+void Graph::insertHead(string name)
 {
-    if (pages.count(name) == 0)
+    // Get original hash value for the page name
+    unsigned int location = hashFunction(name);
+
+    // Find first open spot at or after the initial location
+    while (!graphArray[location]->pageName.empty())
     {
-        // Get original hash value for the page name
-        unsigned int location = hashFunction(name);
-
-        // Find first open spot at or after the initial location
-        while (!graphArray[location]->pageName.empty())
+        if (graphArray[location]->pageName == name)
         {
-            if (graphArray[location]->pageName == name)
-            {
-                return false;
-            }
-            location++;
-            location = location % vertices;
+            return;
         }
-
-        graphArray[location]->pageName = name;
-        pages.insert(name);
-        inserted++;
-        return true;
+        location++;
+        location = location % vertices;
     }
-    return false;
+
+    graphArray[location]->pageName = name;
+    inserted++;
 }
 
 int Graph::find(string name)
@@ -49,19 +45,16 @@ int Graph::find(string name)
 
     // Used to detect a loop, only happens when name does not exist in the graph
     unsigned int loc = location;
-    int loops = -1;
 
     // Find the location
-    while (graphArray[loc]->pageName != name && loops < 1)
+    while (graphArray[loc]->pageName != name)
     {
-        if (loc == location)
-            loops++;
         loc++;
         loc = loc % vertices;
+        if (loc == location)
+            return -1;
     }
 
-    if (loops == 1)
-        return -1;
     return loc;
 }
 
@@ -132,7 +125,7 @@ void Graph::inputGraph(std::vector<string> fileNames)
     vertices = (int)(lines * sizeFactor);
     delete[] graphArray;
     graphArray = new Node*[vertices];
-    for (int i = 0; i < vertices; i ++)
+    for (int i = 0; i < vertices; i++)
     {
         graphArray[i] = new Node;
     }
@@ -151,7 +144,7 @@ void Graph::inputGraph(std::vector<string> fileNames)
         int lineType = 0;
         string line;
         string page;
-        bool duplicate = false;
+
         if (input.is_open())
         {
             while (!input.eof())
@@ -159,63 +152,60 @@ void Graph::inputGraph(std::vector<string> fileNames)
                 if (lineType == 0)
                 {
                     getline(input, line);
-                    duplicate = !insertHead(line);
+                    insertHead(line);
                     page = line;
                 }
+
                 // Help in this section from: https://stackoverflow.com/questions/37957080/can-i-use-2-or-more-delimiters-in-c-function-getline
                 if (lineType == 1)
                 {
                     // First make sure this page isn't a duplicate page
-                    if (!duplicate)
+                    // Find the page, make sure it exists
+                    int index = find(page);
+                    if (index != -1)
                     {
-                        // Find the page, make sure it exists
-                        int index = find(page);
-                        if (index != -1)
+                        // Get the entire line input
+                        getline(input, line);
+
+                        // Create string stream to read through only the comma separated values
+                        std::stringstream currentLine(line);
+                        string l;
+
+                        // Get the head of the list
+                        Node* currentNode = graphArray[index];
+
+                        // Count weight. Weight is the number of links above it on the page + 1;
+                        int w = 1;
+
+                        // Input data
+                        while (getline(currentLine, l, ','))
                         {
-                            // Get the entire line input
-                            getline(input, line);
-
-                            // Create string stream to read through only the comma separated values
-                            std::stringstream currentLine(line);
-                            string l;
-
-                            // Get the head of the list
-                            Node* currentNode = graphArray[index];
-
-                            // Count weight. Weight is the number of links above it on the page + 1;
-                            int w = 1;
-
-                            // Input data
-                            while (getline(currentLine, l, ','))
+                            // Replace underline with spaces
+                            for (int j = 0; j < l.length(); j++)
                             {
-                                // Replace underline with spaces
-                                for (int j = 0; j < l.length(); j++)
-                                {
-                                    if (l[j] == '_')
-                                        l[j] = ' ';
-                                }
-
-                                // To-Do: Don't insert if it is a 'File:...' or other special link such as pronunciation
-
-                                currentNode->next = new Node(l, w);
-                                currentNode = currentNode->next;
-                                w++;
-                                links++;
+                                if (l[j] == '_')
+                                    l[j] = ' ';
                             }
+
+                            // To-Do: Don't insert if it is a 'File:...' or other special link such as pronunciation
+                            currentNode->next = new Node(l, w);
+                            currentNode = currentNode->next;
+                            w++;
+                            links++;
                         }
                     }
                 }
+
                 // Empty Line, just getline to skip
                 if (lineType == 2)
                 {
                     getline(input, line);
                 }
-
                 lineType++;
                 lineType = lineType % 3;
+            
             }
         }
-
         // Close file for next loop
         input.close();
     }
@@ -252,25 +242,24 @@ void Graph::printEdges(string name)
 
 void Graph::printBFSPath(string start, string destination)
 {
-    int src = find(start);
-    int dest = find(destination);
+    int srcIndex = find(start);
     std::queue<std::vector<std::pair<int, std::string>>> q;
     std::set<int> visited;
     std::vector<std::pair<int, std::string>> path;
 
-    path.push_back(make_pair(src, start));
-    visited.insert(src);
+    path.push_back(make_pair(srcIndex, start));
+    visited.insert(srcIndex);
     q.push(path);
 
     while (!q.empty())
     {
         path = q.front();
         q.pop();
-        int currPage = path[(path.size() - 1)].first;
+        int currPageIndex = path[(path.size() - 1)].first;
 
-        for (auto i = graphArray[currPage]; i != nullptr; i = i->next)
+        for (auto i = graphArray[currPageIndex]; i != nullptr; i = i->next)
         {
-            int currIndex = hashFunction(i->pageName);
+            int currIndex = find(i->pageName);
 
             if (visited.count(currIndex) == 0)
             {
@@ -281,7 +270,7 @@ void Graph::printBFSPath(string start, string destination)
                 nextPath.push_back(make_pair(currIndex,i->pageName));
                 q.push(nextPath);
 
-                if (graphArray[currIndex]->pageName == destination) {
+                if (i->pageName == destination) {
                     for (auto page : nextPath) {
                         std::cout << page.second << std::endl;
                     }
@@ -291,4 +280,51 @@ void Graph::printBFSPath(string start, string destination)
         }
     }
     std::cout << "Path to " << destination << " Not Found!" << std::endl;
+}
+
+void Graph::bellmanFord(string start, string destination) {
+    std::unordered_map<int, std::pair<int,int>> distMap;
+    std::unordered_set<int> vertixSet;
+    int srcIndex = find(start);
+
+    for (int i = 0; i < vertices; i++) {
+        if (!graphArray[i]->pageName.empty()) {
+            vertixSet.insert(i);
+            distMap[i] = std::make_pair(INT_MAX, -1);
+        }
+    }
+
+    distMap[srcIndex].first = 0;
+    distMap[srcIndex].second = srcIndex;
+    
+    // for (int i = 0; i < inserted - 1; i++) {
+    for (auto u : vertixSet) {
+        Node* vNode = graphArray[u];
+        while(vNode->next) {
+            //Loops through all edges
+            int v = find(vNode->pageName);
+            if (distMap[u].first + vNode->weight < distMap[v].first) {
+                distMap[v].first = distMap[u].first + vNode->weight;
+                distMap[v].second = u;
+            }   
+            vNode=vNode->next;
+        }
+    }
+    // }
+
+    std::stack<std::string> s;
+    s.push(destination);
+
+    while (s.top() != start) {
+        auto temp = find(s.top());
+        auto name = graphArray[distMap[temp].second]->pageName;
+        s.push(name);
+    }
+
+    while(!s.empty()) {
+        std::cout << s.top() << std::endl;
+        s.pop();
+    }
+    std::cout << std::endl;
+
 }

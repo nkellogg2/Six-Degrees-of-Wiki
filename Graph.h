@@ -1,7 +1,6 @@
 #ifndef WIKIPEDIA_GRAPH_H
 #define WIKIPEDIA_GRAPH_H
 #include <string>
-#include <unordered_set>
 #include <vector>
 using std::string;
 
@@ -34,10 +33,9 @@ private:
     int vertices;
     double sizeFactor;
     Node** graphArray;
-    std::unordered_set<string> pages;
 
     unsigned int hashFunction(string name);
-    bool insertHead(string name);
+    void insertHead(string name);
     int find(string name);
     void deleteNode(Node* n);
 
@@ -47,6 +45,7 @@ public:
     void inputGraph(std::vector<string> fileNames);
     void printEdges(string name);
     void printBFSPath(string start, string destination);
+    void bellmanFord(string start, string destination);
 };
 
 #endif //WIKIPEDIA_GRAPH_H
