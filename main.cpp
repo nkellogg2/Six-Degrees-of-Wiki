@@ -12,7 +12,9 @@ void readFiles(Graph* g, std::vector<string>& files);
 int main() {
     Graph* g = new Graph;
 
-    std::vector<string> fileNames;
+    std::vector<string> fileNames = {"Data/Apple.csv", "Data/GenghisKhan.csv", "Data/JoeBiden.csv", "Data/KungFuPanda.csv",
+                                     "Data/LeBronJames.csv", "Data/Philosophy1.csv", "Data/Philosophy2.csv", "Data/Philosophy3.csv",
+                                     "Data/Wikipedia.csv"};
 
     readFiles(g, fileNames);
 
@@ -73,7 +75,7 @@ bool isValidNum(string num)
 
     int value = std::stoi(num);
 
-    if (value < 1)
+    if (value < 0)
         return false;
 
     return true;
@@ -128,7 +130,7 @@ void listPages(Graph* g)
 void readFiles(Graph* g, std::vector<string>& files)
 {
     string fileNum;
-    std::cout << "How many files would you like to use to build this graph?" << std::endl;
+    std::cout << "How many files would you like to use to build this graph? (Enter 0 to use general data)" << std::endl;
     getline(std::cin, fileNum);
     std::cout << std::endl;
 
