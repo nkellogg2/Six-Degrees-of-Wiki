@@ -53,6 +53,7 @@ public:
     std::vector<string> getEdges(string name);
     void printEdges(string name);
     void printBFSPath(string start, string destination);
+    std::vector<std::pair<int, string>> getBFSPath(string start, string destination);
 };
 
 // needed renamed function for use in MakeGraph.h without linker errors

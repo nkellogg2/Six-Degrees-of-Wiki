@@ -323,3 +323,46 @@ void Graph::printBFSPath(string start, string destination)
     }
     std::cout << "Path to " << destination << " Not Found!" << std::endl;
 }
+
+std::vector<std::pair<int, string>> Graph::getBFSPath(string start, string destination) {
+    int src = find(start);
+    int dest = find(destination);
+    std::queue<std::vector<std::pair<int, std::string>>> q;
+    std::set<int> visited;
+    std::vector<std::pair<int, std::string>> path;
+
+    path.push_back(make_pair(src, start));
+    visited.insert(src);
+    q.push(path);
+
+    while (!q.empty())
+    {
+        path = q.front();
+        q.pop();
+        int currPage = path[(path.size() - 1)].first;
+
+        for (auto i = graphArray[currPage]; i != nullptr; i = i->next)
+        {
+            int currIndex = hashFunction(i->pageName);
+
+            if (visited.count(currIndex) == 0)
+            {
+                visited.insert(currIndex);
+
+                //New vector made using current path and link added to path
+                std::vector<std::pair<int, std::string>> nextPath = path;
+                nextPath.push_back(make_pair(currIndex, i->pageName));
+                q.push(nextPath);
+
+                if (graphArray[currIndex]->pageName == destination) {
+                    /*for (auto page : nextPath) {
+                        std::cout << page.second << std::endl;
+                    }*/
+                    return nextPath;
+                }
+            }
+        }
+    }
+    std::vector<std::pair<int, std::string>> emptyVec;
+    return emptyVec;
+}
