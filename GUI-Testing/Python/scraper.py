@@ -3,7 +3,7 @@ from collections import deque
 from bs4 import BeautifulSoup
    
 def isValidLink(link):
-    if 'class' not in link.attrs.keys() and link.attrs['href'][:5] == "/wiki" and len(link.contents) == 1 and link.attrs['href'][6:].find('/') == -1 and link.attrs['href'].find(':') == -1:
+    if 'class' not in link.attrs.keys() and link.attrs['href'][:5] == "/wiki" and len(link.contents) == 1 and link.attrs['href'][6:].find('/') == -1 and link.attrs['href'].find(':') == -1 and link.attrs['href'].find('#') == -1:
         return True
     return False
 
@@ -11,7 +11,7 @@ def printPages(start_page, n):
     q = deque()
     visited = set()
     max = n
-    index = 1
+    index = 0
     prefix = "https://en.wikipedia.org"
     url = prefix + start_page
     
@@ -19,8 +19,10 @@ def printPages(start_page, n):
 
     start = time.perf_counter()
     with open('compare.csv', 'a', encoding='utf-8') as file:
+        
         while len(q) != 0:
             currURL = q.popleft()
+                            
             if hash(currURL) in visited:
                 continue
             else:
