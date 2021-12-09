@@ -74,7 +74,7 @@ bool isValidNum(string num)
 
     int value = std::stoi(num);
 
-    if (value < 1)
+    if (value < 0)
         return false;
 
     return true;
