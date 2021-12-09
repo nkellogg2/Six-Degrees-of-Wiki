@@ -55,6 +55,7 @@ public:
     void printBFSPath(string start, string destination);
     std::vector<std::pair<int, string>> getBFSPath(string start, string destination);
     void bellmanFord(string start, string destination);
+    std::vector<std::pair<int, string>> getBellmanPath(string start, string destination);
 };
 
 // needed renamed function for use in MakeGraph.h without linker errors

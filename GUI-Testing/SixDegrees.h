@@ -48,6 +48,10 @@ namespace GUITesting {
 	private: System::Windows::Forms::Label^ lbl_pagesBtwn;
 	private: System::Windows::Forms::Label^ lbl_linksBtwn;
 	private: System::Windows::Forms::ListBox^ lb_path;
+	private: System::Windows::Forms::Button^ btn_compareAlgos;
+	private: System::Windows::Forms::RadioButton^ rbtn_bellman;
+	private: System::Windows::Forms::RadioButton^ rbtn_dijkstra;
+	private: System::Windows::Forms::Button^ btn_randomPage;
 
 	private: System::Windows::Forms::Label^ lbl_noEdges;
 
@@ -114,6 +118,10 @@ namespace GUITesting {
 			this->lbl_pagesBtwn = (gcnew System::Windows::Forms::Label());
 			this->lbl_linksBtwn = (gcnew System::Windows::Forms::Label());
 			this->lb_path = (gcnew System::Windows::Forms::ListBox());
+			this->btn_compareAlgos = (gcnew System::Windows::Forms::Button());
+			this->rbtn_bellman = (gcnew System::Windows::Forms::RadioButton());
+			this->rbtn_dijkstra = (gcnew System::Windows::Forms::RadioButton());
+			this->btn_randomPage = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// lbl_article1
@@ -184,6 +192,7 @@ namespace GUITesting {
 			this->box_numLinks->TabIndex = 6;
 			this->box_numLinks->UseMnemonic = false;
 			this->box_numLinks->UseVisualStyleBackColor = true;
+			this->box_numLinks->CheckedChanged += gcnew System::EventHandler(this, &SixDegrees::box_numLinks_CheckedChanged);
 			// 
 			// lbl_numLinks
 			// 
@@ -339,12 +348,62 @@ namespace GUITesting {
 			this->lb_path->TabIndex = 20;
 			this->lb_path->Visible = false;
 			// 
+			// btn_compareAlgos
+			// 
+			this->btn_compareAlgos->BackColor = System::Drawing::Color::DodgerBlue;
+			this->btn_compareAlgos->Location = System::Drawing::Point(176, 460);
+			this->btn_compareAlgos->Name = L"btn_compareAlgos";
+			this->btn_compareAlgos->Size = System::Drawing::Size(129, 29);
+			this->btn_compareAlgos->TabIndex = 21;
+			this->btn_compareAlgos->Text = L"Compare ";
+			this->btn_compareAlgos->UseVisualStyleBackColor = false;
+			this->btn_compareAlgos->Visible = false;
+			// 
+			// rbtn_bellman
+			// 
+			this->rbtn_bellman->AutoSize = true;
+			this->rbtn_bellman->Location = System::Drawing::Point(19, 356);
+			this->rbtn_bellman->Name = L"rbtn_bellman";
+			this->rbtn_bellman->Size = System::Drawing::Size(86, 17);
+			this->rbtn_bellman->TabIndex = 22;
+			this->rbtn_bellman->TabStop = true;
+			this->rbtn_bellman->Text = L"Bellman-Ford";
+			this->rbtn_bellman->UseVisualStyleBackColor = true;
+			this->rbtn_bellman->Visible = false;
+			// 
+			// rbtn_dijkstra
+			// 
+			this->rbtn_dijkstra->AutoSize = true;
+			this->rbtn_dijkstra->Location = System::Drawing::Point(19, 376);
+			this->rbtn_dijkstra->Name = L"rbtn_dijkstra";
+			this->rbtn_dijkstra->Size = System::Drawing::Size(67, 17);
+			this->rbtn_dijkstra->TabIndex = 23;
+			this->rbtn_dijkstra->TabStop = true;
+			this->rbtn_dijkstra->Text = L"Dijkstra\'s";
+			this->rbtn_dijkstra->UseVisualStyleBackColor = true;
+			this->rbtn_dijkstra->Visible = false;
+			// 
+			// btn_randomPage
+			// 
+			this->btn_randomPage->BackColor = System::Drawing::Color::OliveDrab;
+			this->btn_randomPage->Location = System::Drawing::Point(861, 54);
+			this->btn_randomPage->Name = L"btn_randomPage";
+			this->btn_randomPage->Size = System::Drawing::Size(90, 40);
+			this->btn_randomPage->TabIndex = 24;
+			this->btn_randomPage->Text = L"Load Random Page";
+			this->btn_randomPage->UseVisualStyleBackColor = false;
+			this->btn_randomPage->Click += gcnew System::EventHandler(this, &SixDegrees::btn_randomPage_Click);
+			// 
 			// SixDegrees
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::PowderBlue;
 			this->ClientSize = System::Drawing::Size(1003, 521);
+			this->Controls->Add(this->btn_randomPage);
+			this->Controls->Add(this->rbtn_dijkstra);
+			this->Controls->Add(this->rbtn_bellman);
+			this->Controls->Add(this->btn_compareAlgos);
 			this->Controls->Add(this->lb_path);
 			this->Controls->Add(this->lbl_linksBtwn);
 			this->Controls->Add(this->lbl_pagesBtwn);
@@ -367,6 +426,7 @@ namespace GUITesting {
 			this->Controls->Add(this->lbl_article2);
 			this->Controls->Add(this->lbl_article1);
 			this->Name = L"SixDegrees";
+			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
 			this->Text = L"SixDegrees";
 			this->ResumeLayout(false);
 			this->PerformLayout();
@@ -384,8 +444,13 @@ namespace GUITesting {
 		lbl_linksBtwn->Text = L" total links between";
 
 		if (box_numLinks->Checked) {
-			// use dijkstra's here
+			// use bellman-ford or dijkstra's here
+			if (rbtn_bellman->Checked) {
+				
+			}
+			else {
 
+			}
 		}
 		else {
 			lbl_linksBtwn->Visible = false;
@@ -429,6 +494,38 @@ namespace GUITesting {
 			lb_vertices->Items->Add(edgeName);
 		}
 		lb_vertices->EndUpdate();
+	}
+	private: System::Void box_numLinks_CheckedChanged(System::Object^ sender, System::EventArgs^ e) {
+		if (box_numLinks->Checked) {
+			rbtn_bellman->Visible = true;
+			rbtn_dijkstra->Visible = true;
+		}
+		else {
+			rbtn_bellman->Visible = false;
+			rbtn_dijkstra->Visible = false;
+		}
+	}
+		   private: System::Void findEdges_Click() {
+			   string pageName = ConvertString(txt_loadEdges->Text);
+			   std::vector<string> edges = g->getEdges(pageName);
+			   lb_vertices->Items->Clear();
+			   if (edges.size() == 0) {
+				   lbl_noEdges->Visible = true;
+				   return;
+			   }
+			   lbl_noEdges->Visible = false;
+			   lb_vertices->BeginUpdate();
+			   for (auto i = 0; i < edges.size(); i++) {
+				   String^ edgeName = gcnew String(edges.at(i).c_str());
+				   lb_vertices->Items->Add(edgeName);
+			   }
+			   lb_vertices->EndUpdate();
+		   }
+	private: System::Void btn_randomPage_Click(System::Object^ sender, System::EventArgs^ e) {
+		// get list of loaded pages
+		// choose random one, verify non-empty link list
+		// txt_loadEdges->Text = chosen page name
+		findEdges_Click();
 	}
 };
 string ConvertString(System::String^ s) {

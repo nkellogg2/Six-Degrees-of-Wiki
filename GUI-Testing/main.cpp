@@ -79,7 +79,17 @@ void cmdLine(Graph* g) {
             bfsSearch(g);
             break;
         case '3':
-            bellmanford(g);
+            std::cout << "Use Bellman-Ford(0) or Dijkstra's algorithm(1)?" << std::endl;
+            getline(std::cin, input);
+            if (input == "0") {
+                bellmanford(g);
+            }
+            else if (input == "1") {
+                // dijkstras(g);
+            }
+            else {
+                std::cout << "Invalid selection!" << std::endl;
+            }
             break;
         case '4':
             delete g;

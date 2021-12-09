@@ -371,7 +371,7 @@ void Graph::bellmanFord(string start, string destination) {
     distMap[srcIndex].first = 0;
     distMap[srcIndex].second = srcIndex;
 
-    // for (int i = 0; i < inserted - 1; i++) {
+    for (int i = 0; i < inserted - 1; i++) {
     for (auto u : vertixSet) {
         Node* vNode = graphArray[u];
         while (vNode->next) {
@@ -384,7 +384,7 @@ void Graph::bellmanFord(string start, string destination) {
             vNode = vNode->next;
         }
     }
-    // }
+    }
 
     std::stack<std::string> s;
     s.push(destination);
@@ -400,5 +400,51 @@ void Graph::bellmanFord(string start, string destination) {
         s.pop();
     }
     std::cout << std::endl;
-
 }
+
+//std::vector<std::pair<int, string>> Graph::getBellmanPath(string start, string destination) {
+//    std::unordered_map<int, std::pair<int, int>> distMap;
+//    std::unordered_set<int> vertixSet;
+//    int srcIndex = find(start);
+//
+//    for (int i = 0; i < vertices; i++) {
+//        if (!graphArray[i]->pageName.empty()) {
+//            vertixSet.insert(i);
+//            distMap[i] = std::make_pair(INT_MAX, -1);
+//        }
+//    }
+//
+//    distMap[srcIndex].first = 0;
+//    distMap[srcIndex].second = srcIndex;
+//
+//    // for (int i = 0; i < inserted - 1; i++) {
+//    for (auto u : vertixSet) {
+//        Node* vNode = graphArray[u];
+//        while (vNode->next) {
+//            //Loops through all edges
+//            int v = find(vNode->pageName);
+//            if (distMap[u].first + vNode->weight < distMap[v].first) {
+//                distMap[v].first = distMap[u].first + vNode->weight;
+//                distMap[v].second = u;
+//            }
+//            vNode = vNode->next;
+//        }
+//    }
+//    // }
+//
+//    std::stack<std::string> s;
+//    s.push(destination);
+//
+//    while (s.top() != start) {
+//        auto temp = find(s.top());
+//        auto name = graphArray[distMap[temp].second]->pageName;
+//        s.push(name);
+//    }
+//
+//    while (!s.empty()) {
+//        std::cout << s.top() << std::endl;
+//        s.pop();
+//    }
+//    std::cout << std::endl;
+//
+//}

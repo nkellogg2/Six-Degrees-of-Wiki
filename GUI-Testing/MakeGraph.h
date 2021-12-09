@@ -36,6 +36,7 @@ namespace GUITesting {
 		Graph* g = new Graph;
 		int numFiles;
 	private: System::Windows::Forms::Label^ lbl_emptyGraph;
+	private: System::Windows::Forms::Button^ btn_generalData;
 	public:
 	private: System::Windows::Forms::Label^ lbl_LoadingGraph;
 	public:
@@ -83,6 +84,7 @@ namespace GUITesting {
 			this->btn_fileNames = (gcnew System::Windows::Forms::Button());
 			this->lbl_LoadingGraph = (gcnew System::Windows::Forms::Label());
 			this->lbl_emptyGraph = (gcnew System::Windows::Forms::Label());
+			this->btn_generalData = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// lbl_numFiles
@@ -184,12 +186,24 @@ namespace GUITesting {
 			this->lbl_emptyGraph->Text = L"Graph would be empty! Enter another file!";
 			this->lbl_emptyGraph->Visible = false;
 			// 
+			// btn_generalData
+			// 
+			this->btn_generalData->BackColor = System::Drawing::Color::OliveDrab;
+			this->btn_generalData->Location = System::Drawing::Point(537, 65);
+			this->btn_generalData->Name = L"btn_generalData";
+			this->btn_generalData->Size = System::Drawing::Size(131, 56);
+			this->btn_generalData->TabIndex = 9;
+			this->btn_generalData->Text = L"Use general data!";
+			this->btn_generalData->UseVisualStyleBackColor = false;
+			this->btn_generalData->Click += gcnew System::EventHandler(this, &MakeGraph::btn_generalData_Click);
+			// 
 			// MakeGraph
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::PowderBlue;
 			this->ClientSize = System::Drawing::Size(777, 479);
+			this->Controls->Add(this->btn_generalData);
 			this->Controls->Add(this->lbl_emptyGraph);
 			this->Controls->Add(this->lbl_LoadingGraph);
 			this->Controls->Add(this->btn_fileNames);
@@ -200,6 +214,7 @@ namespace GUITesting {
 			this->Controls->Add(this->txt_numFiles);
 			this->Controls->Add(this->lbl_numFiles);
 			this->Name = L"MakeGraph";
+			this->StartPosition = System::Windows::Forms::FormStartPosition::CenterScreen;
 			this->Text = L"MakeGraph";
 			this->ResumeLayout(false);
 			this->PerformLayout();
@@ -209,6 +224,7 @@ namespace GUITesting {
 	public: System::Void btn_numFiles_Click(System::Object^ sender, System::EventArgs^ e) {
 		String^ fileNumInput = txt_numFiles->Text;
 		string fileNum = ConvertString(fileNumInput);
+		btn_generalData->Visible = false;
 
 		if (!isValidNumber(fileNum)) {
 			lbl_invalidNum->Visible = true;
@@ -252,10 +268,19 @@ namespace GUITesting {
 			mainForm.UpdateStats();
 			mainForm.ShowDialog();
 		}
-		
-	
-
-	
+	}
+	private: System::Void btn_generalData_Click(System::Object^ sender, System::EventArgs^ e) {
+		// get names of files for general data stuff
+		// files.push_back(<each file name>)
+		 g->inputGraph(*files);
+		btn_fileNames->Visible = false;
+		lbl_LoadingGraph->Visible = true;
+		lbl_emptyGraph->Visible = false;
+		SixDegrees mainForm;
+		mainForm.g = g;
+		// setting graph stats
+		mainForm.UpdateStats();
+		mainForm.ShowDialog();
 	}
 };
 
