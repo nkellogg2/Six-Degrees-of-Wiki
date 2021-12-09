@@ -45,6 +45,7 @@ public:
     void inputGraph(std::vector<string> fileNames);
     void printEdges(string name);
     void printBFSPath(string start, string destination);
+    void dijkstras(string start, string destination);
     void bellmanFord(string start, string destination);
 };
 

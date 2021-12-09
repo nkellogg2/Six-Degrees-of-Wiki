@@ -282,6 +282,103 @@ void Graph::printBFSPath(string start, string destination)
     std::cout << "Path to " << destination << " Not Found!" << std::endl;
 }
 
+void Graph::dijkstras(string start, string destination)
+{
+    // Initialize variables
+    std::unordered_set<unsigned int> notVisited;
+    unsigned int* shortestPath = new unsigned int[vertices];
+    int* pre = new int[vertices];
+
+    // Set all values to INT_MAX so they can be relaxed
+    for (unsigned int i = 0; i < vertices; i++)
+    {
+        if (!graphArray[i]->pageName.empty())
+        {
+            notVisited.insert(i);
+        }
+        pre[i] = -1;
+        shortestPath[i] = INT_MAX;
+    }
+
+    // Make sure the pages are in the graph
+    int startLoc = find(start);
+    int endLoc = find(destination);
+
+    if (startLoc == -1)
+    {
+        std::cout << "Could not find page \"" << start << "\"!" << std::endl;
+        return;
+    }
+    else if (endLoc == -1)
+    {
+        std::cout << "Could not find page \"" << destination << "\"!" << std::endl;
+        return;
+    }
+
+    // Start relaxation
+    shortestPath[startLoc] = 0;
+
+    while (!notVisited.empty())
+    {
+        // Remove values from notVisited
+        notVisited.erase(startLoc);
+
+        // Get the current pages links
+        Node* currList = graphArray[startLoc];
+        while (currList != nullptr)
+        {
+            // Relax
+            int page = find(currList->pageName);
+            if (shortestPath[startLoc] + currList->weight < shortestPath[page])
+            {
+                shortestPath[page] = shortestPath[startLoc] + currList->weight;
+                pre[page] = startLoc;
+            }
+
+            // Go next
+            currList = currList->next;
+        }
+
+        // Find the lowest value in shortestPath in notVisited
+        unsigned int lowestValue = UINT_MAX;
+        for (unsigned int i = 0; i < vertices; i++)
+        {
+            if (notVisited.count(i) != 0)
+            {
+                if (shortestPath[i] < lowestValue)
+                {
+                    lowestValue = shortestPath[i];
+                    startLoc = i;
+                }
+            }
+        }
+    }
+
+    // With all values set, go backwards to find path
+    std::stack<int> path;
+    while (endLoc != -1)
+    {
+        path.push(endLoc);
+        endLoc = pre[endLoc];
+    }
+
+    if (path.top() != startLoc)
+    {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+    }
+
+    // Now print the path
+    int loc;
+    Node* curr;
+    while (!path.empty())
+    {
+        loc = path.top();
+        path.pop();
+        curr = graphArray[loc];
+        std::cout << curr->pageName << " - Links down: " << curr->weight << std::endl;
+    }
+}
+
 void Graph::bellmanFord(string start, string destination) {
     std::unordered_map<int, std::pair<int,int>> distMap;
     std::unordered_set<int> vertixSet;
