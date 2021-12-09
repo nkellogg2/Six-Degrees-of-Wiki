@@ -17,8 +17,13 @@ def printPages(start_page, n):
     
     q.append(url)
 
+    file_name = start_page.replace("_","")
+    file_name = file_name.replace("/wiki/","")
+    file_name = file_name.replace("'","")
+    file_name = file_name + ".csv"
+
     start = time.perf_counter()
-    with open('compare.csv', 'a', encoding='utf-8') as file:
+    with open(file_name, 'a', encoding='utf-8') as file:
         
         while len(q) != 0:
             currURL = q.popleft()

@@ -17,3 +17,4 @@ max = args.number
 
 # GET Start Page
 scraper.printPages(startPageURL(start_page), max)
+scraper.printPages(startPageURL(dest_page), max)
