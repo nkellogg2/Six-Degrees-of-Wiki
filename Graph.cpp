@@ -202,11 +202,15 @@ void Graph::dijkstras(string start, string destination)
     // Set all values to INT_MAX so they can be relaxed
     for (auto vertix : graphArray)
     {
-        int index = hashFunction(vertix.second->pageName);
-        pair[index] = vertix.second->pageName;
-        notVisited.insert(index);
-        dijkstras[index].first = INT_MAX;
-        dijkstras[index].second = -1;
+        auto node = vertix.second;
+        while (node) {
+            int index = hashFunction(node->pageName);
+            pair[index] = node->pageName;
+            notVisited.insert(index);
+            dijkstras[index].first = INT_MAX;
+            dijkstras[index].second = -1;
+            node=node->next;
+        }
     }
 
     // Make sure the pages are in the graph
@@ -252,6 +256,7 @@ void Graph::dijkstras(string start, string destination)
 
     // With all values set, go backwards to find path
     std::stack<int> path;
+    int pathWeight = dijkstras[endLoc].first;
     while (endLoc != -1)
     {
         path.push(endLoc);
@@ -271,8 +276,9 @@ void Graph::dijkstras(string start, string destination)
         loc = path.top();
         path.pop();
         curr = graphArray[pair[loc]];
-        std::cout << curr->pageName << " - Links down: " << curr->weight << std::endl;
+        std::cout << curr->pageName << std::endl;
     }
+    std::cout << "Weight of Path: " << pathWeight << std::endl;
 }
 
 void Graph::bellmanFord(string start, string destination) {
@@ -321,6 +327,6 @@ void Graph::bellmanFord(string start, string destination) {
         std::cout << s.top() << std::endl;
         s.pop();
     }
-    std::cout << std::endl;
+    std::cout << "Weight of Path: " << distMap[destination].first << std::endl;
 
 }
