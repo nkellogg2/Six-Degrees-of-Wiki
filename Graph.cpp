@@ -70,8 +70,9 @@ void Graph::inputGraph(std::vector<string> fileNames)
                 if (lineType == 0)
                 {
                     getline(input, line);
-                    graphArray[line] = new Node(line, 0);
-                    vertices++;
+                    if (!graphArray[line]) {
+                        graphArray[line] = new Node(line, 0);
+                    }
                     page = line;
                 }
 
@@ -119,6 +120,7 @@ void Graph::inputGraph(std::vector<string> fileNames)
         input.close();
     }
 
+    vertices = graphArray.size();
     std::cout << "Size of the graph: " << vertices << std::endl;
     std::cout << std::endl;
 }
@@ -144,6 +146,11 @@ void Graph::printBFSPath(string start, string destination)
     std::queue<std::vector<std::string>> q;
     std::set<int> visited;
     std::vector<std::string> path;
+
+    if (!graphArray[start] || !graphArray[destination]) {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return;
+    }
 
     path.push_back(start);
     visited.insert(hashFunction(start));
@@ -186,6 +193,11 @@ void Graph::dijkstras(string start, string destination)
     std::unordered_set<unsigned int> notVisited;
     std::unordered_map<int, std::pair<int, int>> dijkstras;
     std::unordered_map<int, string> pair;
+
+    if (!graphArray[start] || !graphArray[destination]) {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return;
+    }
 
     // Set all values to INT_MAX so they can be relaxed
     for (auto vertix : graphArray)
@@ -266,25 +278,34 @@ void Graph::dijkstras(string start, string destination)
 void Graph::bellmanFord(string start, string destination) {
     std::unordered_map<string, std::pair<int,string>> distMap;
 
+    if (!graphArray[start] || !graphArray[destination]) {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return;
+    }
+
     for (auto pair : graphArray) {
-        distMap[pair.second->pageName] = std::make_pair(INT_MAX, "");
+        auto node = pair.second;
+        while (node) {
+            distMap[node->pageName] = std::make_pair(INT_MAX, "");
+            node=node->next;
+        }
     }
 
 
     distMap[start].first = 0;
     distMap[start].second = start;
     
-    for (int i = 0; i < graphArray.size() - 1; i++) {
+    for (int i = 0; i < vertices - 1; i++) {
         for (auto u : graphArray) {
             Node* vNode = u.second;
-            while(vNode->next) {
+            while (vNode) {
                 //Loops through all edges
                 if (distMap[u.second->pageName].first + vNode->weight < distMap[vNode->pageName].first) {
                     distMap[vNode->pageName].first = distMap[u.second->pageName].first + vNode->weight;
                     distMap[vNode->pageName].second = u.second->pageName;
                 }   
                 vNode=vNode->next;
-            }
+            } 
         }
     }
 
