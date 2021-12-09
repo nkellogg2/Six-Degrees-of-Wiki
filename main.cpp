@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include "Graph.h"
 
 bool isValidNum(string num);
@@ -7,14 +8,13 @@ void bfsSearch(Graph* g);
 void dijkstras(Graph* g);
 void bellmanford(Graph* g);
 void listPages(Graph* g);
-void readFiles(Graph* g, std::vector<string>& files);
+void readFiles(Graph* g);
+std::pair<std::string, std::string> getStartStop();
 
 int main() {
     Graph* g = new Graph;
 
-    std::vector<string> fileNames;
-
-    readFiles(g, fileNames);
+    readFiles(g);
 
     string input = "";
 
@@ -24,7 +24,7 @@ int main() {
         std::cout << "1. List page links" << std::endl;
         std::cout << "2. Find the shortest path by pages" << std::endl;
         std::cout << "3. Find the shortest path by links" << std::endl;
-        std::cout << "4. Insert more data files" << std::endl;
+        std::cout << "4. Rebuild graph with new files" << std::endl;
         std::cout << "5. Stop the program" << std::endl;
         getline(std::cin, input);
         std::cout << std::endl;
@@ -43,12 +43,13 @@ int main() {
                 bfsSearch(g);
                 break;
             case '3' :
+                dijkstras(g);
                 bellmanford(g);
                 break;
             case '4' :
                 delete g;
                 g = new Graph;
-                readFiles(g, fileNames);
+                readFiles(g);
                 break;
             case '5' :
                 break;
@@ -81,40 +82,55 @@ bool isValidNum(string num)
 
 void bfsSearch(Graph* g)
 {
-    string start;
-    std::cout << "Enter the name of the starting page:" << std::endl;
-    getline(std::cin, start);
+    auto pair = getStartStop();
+
+    // Start timer
+    auto timer = std::chrono::steady_clock::now();
+
+    g->printBFSPath(pair.first, pair.second);
+
+    // End timer
+    auto end = std::chrono::steady_clock::now();
+
+    // Display time
     std::cout << std::endl;
-    string dest;
-    std::cout << "Enter the name of the destination page:" << std::endl;
-    getline(std::cin, dest);
-    std::cout << std::endl;
-    g->printBFSPath(start, dest);
+    std::cout << "Time perform BFS in seconds: "
+    << std::chrono::duration_cast<std::chrono::seconds>(end - timer).count() << std::endl;
 }
 
 void dijkstras(Graph* g)
 {
-    string start;
-    std::cout << "Enter the name of the starting page:" << std::endl;
-    getline(std::cin, start);
+    auto pair = getStartStop();
+    
+    // Start timer
+    auto timer = std::chrono::steady_clock::now();
+    
+    g->dijkstras(pair.first, pair.second);
+
+    // End timer
+    auto end = std::chrono::steady_clock::now();
+
+    // Display time
     std::cout << std::endl;
-    string dest;
-    std::cout << "Enter the name of the destination page:" << std::endl;
-    getline(std::cin, dest);
-    std::cout << std::endl;
-    // g->printDijkstrasPath(start, dest);
+    std::cout << "Time perform Dijkstra's Algorithm in seconds: "
+    << std::chrono::duration_cast<std::chrono::seconds>(end - timer).count() << std::endl;
 }
 
 void bellmanford(Graph* g) {
-    string start;
-    std::cout << "Enter the name of the starting page:" << std::endl;
-    getline(std::cin, start);
+    auto pair = getStartStop();
+
+    // Start timer
+    auto timer = std::chrono::steady_clock::now();
+
+    g->bellmanFord(pair.first, pair.second);
+
+    // End timer
+    auto end = std::chrono::steady_clock::now();
+
+    // Display time
     std::cout << std::endl;
-    string dest;
-    std::cout << "Enter the name of the destination page:" << std::endl;
-    getline(std::cin, dest);
-    std::cout << std::endl;
-    g->bellmanFord(start, dest);
+    std::cout << "Time perform Bellman-Ford Algorithm in seconds: "
+    << std::chrono::duration_cast<std::chrono::seconds>(end - timer).count() << std::endl;
 }
 
 void listPages(Graph* g)
@@ -125,10 +141,11 @@ void listPages(Graph* g)
     g->printEdges(input);
 }
 
-void readFiles(Graph* g, std::vector<string>& files)
+void readFiles(Graph* g)
 {
+    std::vector<string> files;
     string fileNum;
-    std::cout << "How many files would you like to use to build this graph?" << std::endl;
+    std::cout << "How many files would you like to use to build this graph? (Enter 0 to use general data)" << std::endl;
     getline(std::cin, fileNum);
     std::cout << std::endl;
 
@@ -141,6 +158,13 @@ void readFiles(Graph* g, std::vector<string>& files)
 
     int numFiles = std::stoi(fileNum);
 
+    if (stoi(fileNum) == 0)
+    {
+        files = {"Data/Apple.csv", "Data/GenghisKhan.csv", "Data/JoeBiden.csv", "Data/KungFuPanda.csv",
+                    "Data/LeBronJames.csv", "Data/Philosophy1.csv", "Data/Philosophy2.csv", "Data/Philosophy3.csv",
+                    "Data/Wikipedia.csv"};
+    }
+
     for (int i = 0; i < numFiles; i++)
     {
         string fileName;
@@ -151,4 +175,16 @@ void readFiles(Graph* g, std::vector<string>& files)
     }
 
     g->inputGraph(files);
+}
+
+std::pair<std::string, std::string> getStartStop() {
+    string start;
+    std::cout << "Enter the name of the starting page:" << std::endl;
+    getline(std::cin, start);
+    std::cout << std::endl;
+    string dest;
+    std::cout << "Enter the name of the destination page:" << std::endl;
+    getline(std::cin, dest);
+    std::cout << std::endl;
+    return std::make_pair(start, dest);
 }

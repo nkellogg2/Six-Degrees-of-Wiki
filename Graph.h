@@ -2,6 +2,7 @@
 #define WIKIPEDIA_GRAPH_H
 #include <string>
 #include <vector>
+#include <unordered_map>
 using std::string;
 
 class Graph
@@ -29,14 +30,12 @@ private:
         };
     };
 
-    int inserted;
     int vertices;
-    double sizeFactor;
-    Node** graphArray;
+    int mapSize;
+    std::unordered_map<std::string, Node*> graphArray;
 
     unsigned int hashFunction(string name);
     void insertHead(string name);
-    int find(string name);
     void deleteNode(Node* n);
 
 public:
@@ -45,6 +44,7 @@ public:
     void inputGraph(std::vector<string> fileNames);
     void printEdges(string name);
     void printBFSPath(string start, string destination);
+    void dijkstras(string start, string destination);
     void bellmanFord(string start, string destination);
 };
 
