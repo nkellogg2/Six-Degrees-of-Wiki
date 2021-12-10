@@ -15,47 +15,7 @@ unsigned int Graph::hashFunction(string name)
 {
     //Standard C++ Hash Function
     std::hash<std::string> str_hash;
-    return (str_hash(name) % vertices);
-}
-
-void Graph::insertHead(string name)
-{
-    // Get original hash value for the page name
-    unsigned int location = hashFunction(name);
-
-    // Find first open spot at or after the initial location
-    while (!graphArray[location]->pageName.empty())
-    {
-        if (graphArray[location]->pageName == name)
-        {
-            return;
-        }
-        location++;
-        location = location % vertices;
-    }
-
-    graphArray[location]->pageName = name;
-    inserted++;
-}
-
-int Graph::find(string name)
-{
-    // Get original hash value for the page name
-    unsigned int location = hashFunction(name);
-
-    // Used to detect a loop, only happens when name does not exist in the graph
-    unsigned int loc = location;
-
-    // Find the location
-    while (graphArray[loc]->pageName != name)
-    {
-        loc++;
-        loc = loc % vertices;
-        if (loc == location)
-            return -1;
-    }
-
-    return loc;
+    return str_hash(name);
 }
 
 void Graph::deleteNode(Node* n)
@@ -70,80 +30,35 @@ void Graph::deleteNode(Node* n)
 
 Graph::Graph()
 {
-    inserted = 0;
     vertices = 0;
     numLinks = 0;
-    sizeFactor = 1.5; // NEVER below 1
-    graphArray = new Node*[1];
+    mapSize = 200000;
 }
 
 Graph::~Graph()
 {
-    for (int i = 0; i < vertices; i++)
+    for (auto vertix : graphArray)
     {
-        deleteNode(graphArray[i]);
+        deleteNode(vertix.second);
     }
-    delete[] graphArray;
 }
 
-int Graph::getNumVertices() {
-    return vertices;
-}
 
 int Graph::getNumLinks() {
     return numLinks;
 }
 
-int Graph::getPagesInserted() {
-    return inserted;
+int Graph::getVertices() {
+    return vertices;
 }
 
 void Graph::inputGraph(std::vector<string> fileNames)
 {
+    numLinks = 0;
     // File reading object
     std::ifstream input;
 
-    // Reading the input size
-    numLinks = 0;
-    int lines = 0;
-    for (int i = 0; i < fileNames.size(); i++)
-    {
-        // Open the files
-        input.open(fileNames[i]);
-
-        // Read how many lines, then divide by three
-        // Not super efficient but this will mean no resizing
-        string line;
-        if (input.is_open())
-        {
-            while (!input.eof())
-            {
-                getline(input, line);
-                lines++;
-            }
-        }
-        else
-        {
-            std::cout << "Sorry, couldn't open \"" << fileNames[i] << "\"" << std::endl;
-            std::cout << std::endl;
-        }
-
-        // Close file for next loop
-        input.close();
-    }
-
-    // Set the graph to the correct size and update vertices;
-    // Size factor adds extra space to reduce likelihood of collisions
-    lines = lines / 3;
-    vertices = (int)(lines * sizeFactor);
-    delete[] graphArray;
-    graphArray = new Node * [vertices];
-    for (int i = 0; i < vertices; i++)
-    {
-        graphArray[i] = new Node;
-    }
-
-    // Actually read the data
+    // Read the data
     for (int i = 0; i < fileNames.size(); i++)
     {
         // Open the file
@@ -165,47 +80,41 @@ void Graph::inputGraph(std::vector<string> fileNames)
                 if (lineType == 0)
                 {
                     getline(input, line);
-                    insertHead(line);
+                    if (!graphArray[line]) {
+                        graphArray[line] = new Node(line, 0);
+                    }
                     page = line;
                 }
 
                 // Help in this section from: https://stackoverflow.com/questions/37957080/can-i-use-2-or-more-delimiters-in-c-function-getline
                 if (lineType == 1)
                 {
-                    // First make sure this page isn't a duplicate page
-                    // Find the page, make sure it exists
-                    int index = find(page);
-                    if (index != -1)
+                    getline(input, line);
+
+                    // Create string stream to read through only the comma separated values
+                    std::stringstream currentLine(line);
+                    string l;
+
+                    // Get the head of the list
+                    Node* currentNode = graphArray[page];
+
+                    // Count weight. Weight is the number of links above it on the page + 1;
+                    int w = 1;
+
+                    // Input data
+                    while (getline(currentLine, l, ','))
                     {
-                        // Get the entire line input
-                        getline(input, line);
-
-                        // Create string stream to read through only the comma separated values
-                        std::stringstream currentLine(line);
-                        string l;
-
-                        // Get the head of the list
-                        Node* currentNode = graphArray[index];
-
-                        // Count weight. Weight is the number of links above it on the page + 1;
-                        int w = 1;
-
-                        // Input data
-                        while (getline(currentLine, l, ','))
-                        {
-                            // Replace underline with spaces
-                            for (int j = 0; j < l.length(); j++)
-                            {
-                                if (l[j] == '_')
-                                    l[j] = ' ';
-                            }
-
-                            // To-Do: Don't insert if it is a 'File:...' or other special link such as pronunciation
-                            currentNode->next = new Node(l, w);
-                            currentNode = currentNode->next;
-                            w++;
-                            numLinks++;
+                        // Replace underline with spaces
+                        auto underline = l.find('_');
+                        while (underline != string::npos) {
+                            l.replace(underline, 1, " ");
+                            underline = l.find('_');
                         }
+
+                        currentNode->next = new Node(l, w);
+                        currentNode = currentNode->next;
+                        w++;
+                        numLinks++;
                     }
                 }
 
@@ -216,94 +125,114 @@ void Graph::inputGraph(std::vector<string> fileNames)
                 }
                 lineType++;
                 lineType = lineType % 3;
-
             }
         }
         // Close file for next loop
         input.close();
     }
-
+    vertices = graphArray.size();
     std::cout << "Size of the graph: " << vertices << std::endl;
-    std::cout << "Pages inserted: " << inserted << std::endl;
-    std::cout << "Links added: " << numLinks << std::endl;
+    std::cout << "Number of links: " << numLinks << std::endl;
     std::cout << std::endl;
+}
+
+string Graph::getRandomNode() {
+    if (vertices == 0) {
+        return "";
+    }
+     // random NON EMPTY unordered_map element
+    // 2% chance for each element, runs until one is chosen
+    int random = rand() % 101;
+    while (true) {
+        for (auto vertix : graphArray) {
+            if (random < 3) {
+                return vertix.first;
+            }
+            random = rand() % 101;
+        }
+    }
+
 }
 
 std::vector<string> Graph::getEdges(string name) {
     std::vector<string> edges;
-    int index = find(name);
-
-    if (index == -1) {
+    if (name == "") {
         return edges;
+    }
+    Node* currentNode;
+    if (graphArray[name]) {
+        currentNode = graphArray[name];
     }
     else {
-        Node* currentNode = graphArray[index];
-
-        while (currentNode->next != nullptr) {
-            currentNode = currentNode->next;
-            edges.push_back(currentNode->pageName);
-        }
         return edges;
     }
+
+    
+    if (!currentNode->next) {
+        return edges;
+    }
+
+    while (currentNode->next != nullptr)
+    {
+        currentNode = currentNode->next;
+        edges.push_back(currentNode->pageName);
+    }
+    return edges;
 }
 
 void Graph::printEdges(string name)
 {
-    int index = find(name);
+    std::cout << "Links on the page \"" << name << "\":" << std::endl;
+    std::cout << std::endl;
 
-    if (index == -1)
+    Node* currentNode = graphArray[name];
+
+    while (currentNode->next != nullptr)
     {
-        std::cout << "Sorry, \"" << name << "\" could not be found in this graph" << std::endl;
+        currentNode = currentNode->next;
+        std::cout << currentNode->weight << ". " << currentNode->pageName << std::endl;
     }
-    else
-    {
-        std::cout << "Links on the page \"" << name << "\":" << std::endl;
-        std::cout << std::endl;
 
-        Node* currentNode = graphArray[index];
-
-        while (currentNode->next != nullptr)
-        {
-            currentNode = currentNode->next;
-            std::cout << currentNode->weight << ". " << currentNode->pageName << std::endl;
-        }
-    }
     std::cout << std::endl;
 }
 
 void Graph::printBFSPath(string start, string destination)
 {
-    int srcIndex = find(start);
-    std::queue<std::vector<std::pair<int, std::string>>> q;
+    std::queue<std::vector<std::string>> q;
     std::set<int> visited;
-    std::vector<std::pair<int, std::string>> path;
+    std::vector<std::string> path;
 
-    path.push_back(make_pair(srcIndex, start));
-    visited.insert(srcIndex);
+    if (!graphArray[start] || !graphArray[destination]) {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return;
+    }
+
+    path.push_back(start);
+    visited.insert(hashFunction(start));
     q.push(path);
 
     while (!q.empty())
     {
         path = q.front();
         q.pop();
-        int currPageIndex = path[(path.size() - 1)].first;
+        string currPage = path[(path.size() - 1)];
 
-        for (auto i = graphArray[currPageIndex]; i != nullptr; i = i->next)
+        // Loops through links on page
+        for (auto i = graphArray[currPage]; i != nullptr; i = i->next)
         {
-            int currIndex = find(i->pageName);
 
-            if (currIndex != -1 && visited.count(currIndex) == 0)
+            if (visited.count(hashFunction(i->pageName)) == 0)
             {
-                visited.insert(currIndex);
+                visited.insert(hashFunction(i->pageName));
 
                 //New vector made using current path and link added to path
-                std::vector<std::pair<int, std::string>> nextPath = path;
-                nextPath.push_back(make_pair(currIndex, i->pageName));
+                std::vector<std::string> nextPath = path;
+                nextPath.push_back(i->pageName);
                 q.push(nextPath);
 
                 if (i->pageName == destination) {
                     for (auto page : nextPath) {
-                        std::cout << page.second << std::endl;
+                        std::cout << page << std::endl;
                     }
                     return;
                 }
@@ -313,85 +242,284 @@ void Graph::printBFSPath(string start, string destination)
     std::cout << "Path to " << destination << " Not Found!" << std::endl;
 }
 
-std::vector<std::pair<int, string>> Graph::getBFSPath(string start, string destination) {
-    int src = find(start);
-    int dest = find(destination);
-    std::queue<std::vector<std::pair<int, std::string>>> q;
+std::vector<string> Graph::getBFSPath(string start, string destination) {
+    std::queue<std::vector<std::string>> q;
     std::set<int> visited;
-    std::vector<std::pair<int, std::string>> path;
+    std::vector<std::string> path;
 
-    path.push_back(make_pair(src, start));
-    visited.insert(src);
+    if (!graphArray[start] || !graphArray[destination]) {
+        // std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return path;
+    }
+
+    path.push_back(start);
+    visited.insert(hashFunction(start));
     q.push(path);
 
     while (!q.empty())
     {
         path = q.front();
         q.pop();
-        int currPage = path[(path.size() - 1)].first;
+        string currPage = path[(path.size() - 1)];
 
+        // Loops through links on page
         for (auto i = graphArray[currPage]; i != nullptr; i = i->next)
         {
-            int currIndex = find(i->pageName);
 
-            if (currIndex != -1 && visited.count(currIndex) == 0)
+            if (visited.count(hashFunction(i->pageName)) == 0)
             {
-                visited.insert(currIndex);
+                visited.insert(hashFunction(i->pageName));
 
                 //New vector made using current path and link added to path
-                std::vector<std::pair<int, std::string>> nextPath = path;
-                nextPath.push_back(make_pair(currIndex, i->pageName));
+                std::vector<std::string> nextPath = path;
+                nextPath.push_back(i->pageName);
                 q.push(nextPath);
 
-                if (graphArray[currIndex]->pageName == destination) {
+                if (i->pageName == destination) {
                     /*for (auto page : nextPath) {
-                        std::cout << page.second << std::endl;
+                        std::cout << page << std::endl;
                     }*/
                     return nextPath;
                 }
             }
         }
     }
-    std::vector<std::pair<int, std::string>> emptyVec;
+    std::vector<std::string> emptyVec;
     return emptyVec;
 }
 
-void Graph::bellmanFord(string start, string destination) {
-    std::unordered_map<int, std::pair<int, int>> distMap;
-    std::unordered_set<int> vertixSet;
-    int srcIndex = find(start);
+void Graph::dijkstras(string start, string destination)
+{
+    // Initialize variables
+    std::unordered_set<unsigned int> notVisited;
+    std::unordered_map<int, std::pair<int, int>> dijkstras;
+    std::unordered_map<int, string> pair;
 
-    for (int i = 0; i < vertices; i++) {
-        if (!graphArray[i]->pageName.empty()) {
-            vertixSet.insert(i);
-            distMap[i] = std::make_pair(INT_MAX, -1);
+    if (!graphArray[start] || !graphArray[destination]) {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return;
+    }
+
+    // Set all values to INT_MAX so they can be relaxed
+    for (auto vertix : graphArray)
+    {
+        auto node = vertix.second;
+        while (node) {
+            int index = hashFunction(node->pageName);
+            pair[index] = node->pageName;
+            notVisited.insert(index);
+            dijkstras[index].first = INT_MAX;
+            dijkstras[index].second = -1;
+            node = node->next;
         }
     }
 
-    distMap[srcIndex].first = 0;
-    distMap[srcIndex].second = srcIndex;
+    // Make sure the pages are in the graph
+    int startLoc = hashFunction(start);
+    int endLoc = hashFunction(destination);
 
-    for (int i = 0; i < inserted - 1; i++) {
-    for (auto u : vertixSet) {
-        Node* vNode = graphArray[u];
-        while (vNode->next) {
-            //Loops through all edges
-            int v = find(vNode->pageName);
-            if (distMap[u].first + vNode->weight < distMap[v].first) {
-                distMap[v].first = distMap[u].first + vNode->weight;
-                distMap[v].second = u;
+    // Start relaxation
+    dijkstras[startLoc].first = 0;
+    Node* currList = graphArray[start];
+
+    while (!notVisited.empty())
+    {
+        // Remove values from notVisited
+        notVisited.erase(startLoc);
+
+        // Get the current pages links
+        while (currList != nullptr)
+        {
+            // Relax
+            int page = hashFunction(currList->pageName);
+            if (dijkstras[startLoc].first + currList->weight < dijkstras[page].first)
+            {
+                dijkstras[page].first = dijkstras[startLoc].first + currList->weight;
+                dijkstras[page].second = startLoc;
             }
-            vNode = vNode->next;
+
+            // Go next
+            currList = currList->next;
+        }
+
+        // Find the lowest value in shortestPath in notVisited
+        unsigned int lowestValue = UINT_MAX;
+        for (auto v : notVisited)
+        {
+            if (dijkstras[v].first < lowestValue)
+            {
+                lowestValue = dijkstras[v].first;
+                startLoc = v;
+                currList = graphArray[pair[v]];
+            }
         }
     }
+
+    // With all values set, go backwards to find path
+    std::stack<int> path;
+    int pathWeight = dijkstras[endLoc].first;
+    while (endLoc != -1)
+    {
+        path.push(endLoc);
+        endLoc = dijkstras[endLoc].second;
+    }
+
+    if (pair[path.top()] != start)
+    {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+    }
+
+    // Now print the path
+    int loc;
+    Node* curr;
+    while (!path.empty())
+    {
+        loc = path.top();
+        path.pop();
+        curr = graphArray[pair[loc]];
+        std::cout << curr->pageName << std::endl;
+    }
+    std::cout << "Weight of Path: " << pathWeight << std::endl;
+}
+
+std::vector<std::pair<int, string>> Graph::getDijkstrasPath(string start, string destination) {
+    // Initialize variables
+    std::unordered_set<unsigned int> notVisited;
+    std::unordered_map<int, std::pair<int, int>> dijkstras;
+    std::unordered_map<int, string> pair;
+    std::vector<std::pair<int, string>> pathVec;
+
+    if (!graphArray[start] || !graphArray[destination]) {
+        // std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return pathVec;
+    }
+
+    // Set all values to INT_MAX so they can be relaxed
+    for (auto vertix : graphArray)
+    {
+        auto node = vertix.second;
+        while (node) {
+            int index = hashFunction(node->pageName);
+            pair[index] = node->pageName;
+            notVisited.insert(index);
+            dijkstras[index].first = INT_MAX;
+            dijkstras[index].second = -1;
+            node = node->next;
+        }
+    }
+
+    // Make sure the pages are in the graph
+    int startLoc = hashFunction(start);
+    int endLoc = hashFunction(destination);
+
+    // Start relaxation
+    dijkstras[startLoc].first = 0;
+    Node* currList = graphArray[start];
+
+    while (!notVisited.empty())
+    {
+        // Remove values from notVisited
+        notVisited.erase(startLoc);
+
+        // Get the current pages links
+        while (currList != nullptr)
+        {
+            // Relax
+            int page = hashFunction(currList->pageName);
+            if (dijkstras[startLoc].first + currList->weight < dijkstras[page].first)
+            {
+                dijkstras[page].first = dijkstras[startLoc].first + currList->weight;
+                dijkstras[page].second = startLoc;
+            }
+
+            // Go next
+            currList = currList->next;
+        }
+
+        // Find the lowest value in shortestPath in notVisited
+        unsigned int lowestValue = UINT_MAX;
+        for (auto v : notVisited)
+        {
+            if (dijkstras[v].first < lowestValue)
+            {
+                lowestValue = dijkstras[v].first;
+                startLoc = v;
+                currList = graphArray[pair[v]];
+            }
+        }
+    }
+
+    // With all values set, go backwards to find path
+    std::stack<int> path;
+    int pathWeight = dijkstras[endLoc].first;
+    while (endLoc != -1)
+    {
+        path.push(endLoc);
+        endLoc = dijkstras[endLoc].second;
+    }
+
+    if (pair[path.top()] != start)
+    {
+        // std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return pathVec;
+    }
+
+    // Now print the path
+    int loc;
+    Node* curr;
+    while (!path.empty())
+    {
+        loc = path.top();
+        path.pop();
+        curr = graphArray[pair[loc]];
+        // std::cout << curr->pageName << std::endl;
+        pathVec.push_back(make_pair(0, curr->pageName));
+
+    }
+    // std::cout << "Weight of Path: " << pathWeight << std::endl;
+    pathVec[0].first = pathWeight;
+    return pathVec;
+}
+
+void Graph::bellmanFord(string start, string destination) {
+    std::unordered_map<string, std::pair<int, string>> distMap;
+
+    if (!graphArray[start] || !graphArray[destination]) {
+        std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return;
+    }
+
+    for (auto pair : graphArray) {
+        auto node = pair.second;
+        while (node) {
+            distMap[node->pageName] = std::make_pair(INT_MAX, "");
+            node = node->next;
+        }
+    }
+
+
+    distMap[start].first = 0;
+    distMap[start].second = start;
+
+    for (int i = 0; i < vertices - 1; i++) {
+        for (auto u : graphArray) {
+            Node* vNode = u.second;
+            while (vNode) {
+                //Loops through all edges
+                if (distMap[u.second->pageName].first + vNode->weight < distMap[vNode->pageName].first) {
+                    distMap[vNode->pageName].first = distMap[u.second->pageName].first + vNode->weight;
+                    distMap[vNode->pageName].second = u.second->pageName;
+                }
+                vNode = vNode->next;
+            }
+        }
     }
 
     std::stack<std::string> s;
     s.push(destination);
 
     while (s.top() != start) {
-        auto temp = find(s.top());
-        auto name = graphArray[distMap[temp].second]->pageName;
+        auto name = distMap[s.top()].second;
         s.push(name);
     }
 
@@ -399,52 +527,57 @@ void Graph::bellmanFord(string start, string destination) {
         std::cout << s.top() << std::endl;
         s.pop();
     }
-    std::cout << std::endl;
+    std::cout << "Weight of Path: " << distMap[destination].first << std::endl;
 }
 
-//std::vector<std::pair<int, string>> Graph::getBellmanPath(string start, string destination) {
-//    std::unordered_map<int, std::pair<int, int>> distMap;
-//    std::unordered_set<int> vertixSet;
-//    int srcIndex = find(start);
-//
-//    for (int i = 0; i < vertices; i++) {
-//        if (!graphArray[i]->pageName.empty()) {
-//            vertixSet.insert(i);
-//            distMap[i] = std::make_pair(INT_MAX, -1);
-//        }
-//    }
-//
-//    distMap[srcIndex].first = 0;
-//    distMap[srcIndex].second = srcIndex;
-//
-//    // for (int i = 0; i < inserted - 1; i++) {
-//    for (auto u : vertixSet) {
-//        Node* vNode = graphArray[u];
-//        while (vNode->next) {
-//            //Loops through all edges
-//            int v = find(vNode->pageName);
-//            if (distMap[u].first + vNode->weight < distMap[v].first) {
-//                distMap[v].first = distMap[u].first + vNode->weight;
-//                distMap[v].second = u;
-//            }
-//            vNode = vNode->next;
-//        }
-//    }
-//    // }
-//
-//    std::stack<std::string> s;
-//    s.push(destination);
-//
-//    while (s.top() != start) {
-//        auto temp = find(s.top());
-//        auto name = graphArray[distMap[temp].second]->pageName;
-//        s.push(name);
-//    }
-//
-//    while (!s.empty()) {
-//        std::cout << s.top() << std::endl;
-//        s.pop();
-//    }
-//    std::cout << std::endl;
-//
-//}
+std::vector<std::pair<int, string>> Graph::getBellmanPath(string start, string destination) {
+    std::unordered_map<string, std::pair<int, string>> distMap;
+    std::vector<std::pair<int, string>> pathVec;
+
+    if (!graphArray[start] || !graphArray[destination]) {
+        // std::cout << "Path between \"" << start << "\" and \"" << destination << "\" could not be found." << std::endl;
+        return pathVec;
+    }
+
+    for (auto pair : graphArray) {
+        auto node = pair.second;
+        while (node) {
+            distMap[node->pageName] = std::make_pair(INT_MAX, "");
+            node = node->next;
+        }
+    }
+
+
+    distMap[start].first = 0;
+    distMap[start].second = start;
+
+    for (int i = 0; i < vertices - 1; i++) {
+        for (auto u : graphArray) {
+            Node* vNode = u.second;
+            while (vNode) {
+                //Loops through all edges
+                if (distMap[u.second->pageName].first + vNode->weight < distMap[vNode->pageName].first) {
+                    distMap[vNode->pageName].first = distMap[u.second->pageName].first + vNode->weight;
+                    distMap[vNode->pageName].second = u.second->pageName;
+                }
+                vNode = vNode->next;
+            }
+        }
+    }
+
+    std::stack<std::string> s;
+    s.push(destination);
+
+    while (s.top() != start) {
+        auto name = distMap[s.top()].second;
+        s.push(name);
+    }
+
+    while (!s.empty()) {
+        // std::cout << s.top() << std::endl;
+        pathVec.push_back(make_pair(0, s.top()));
+        s.pop();
+    }
+    // std::cout << "Weight of Path: " << distMap[destination].first << std::endl;
+    pathVec[0].first = distMap[destination].first;
+}

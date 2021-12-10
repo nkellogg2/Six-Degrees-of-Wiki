@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include "Graph.h"
 #include "SixDegrees.h"
 #include "MakeGraph.h"
@@ -85,7 +86,7 @@ void cmdLine(Graph* g) {
                 bellmanford(g);
             }
             else if (input == "1") {
-                // dijkstras(g);
+                dijkstras(g);
             }
             else {
                 std::cout << "Invalid selection!" << std::endl;
@@ -118,7 +119,7 @@ bool isValidNum(string num)
 
     int value = std::stoi(num);
 
-    if (value < 1)
+    if (value < 0)
         return false;
 
     return true;
@@ -134,7 +135,14 @@ void bfsSearch(Graph* g)
     std::cout << "Enter the name of the destination page:" << std::endl;
     getline(std::cin, dest);
     std::cout << std::endl;
+    // start timer
+    auto timer = std::chrono::steady_clock::now();
     g->printBFSPath(start, dest);
+    // end timer
+    auto end = std::chrono::steady_clock::now();
+    // display time
+    std::cout << std::endl << "Time to perform BFS in seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - timer).count() << std::endl << std::endl;
+
 }
 
 void dijkstras(Graph* g)
@@ -147,7 +155,14 @@ void dijkstras(Graph* g)
     std::cout << "Enter the name of the destination page:" << std::endl;
     getline(std::cin, dest);
     std::cout << std::endl;
-    //g->printDijkstrasPath(start, dest);
+    // start timer
+    auto timer = std::chrono::steady_clock::now();
+    g->dijkstras(start, dest);
+    // end timer
+    auto end = std::chrono::steady_clock::now();
+    // display time
+    std::cout << std::endl << "Time to perform BFS in seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - timer).count() << std::endl << std::endl;
+
 }
 
 void bellmanford(Graph* g) {
@@ -159,7 +174,14 @@ void bellmanford(Graph* g) {
     std::cout << "Enter the name of the destination page:" << std::endl;
     getline(std::cin, dest);
     std::cout << std::endl;
+    // start timer
+    auto timer = std::chrono::steady_clock::now();
     g->bellmanFord(start, dest);
+    // end timer
+    auto end = std::chrono::steady_clock::now();
+    // display time
+    std::cout << std::endl << "Time to perform BFS in seconds: " << std::chrono::duration_cast<std::chrono::seconds>(end - timer).count() << std::endl << std::endl;
+
 }
 
 void listPages(Graph* g)
@@ -172,26 +194,27 @@ void listPages(Graph* g)
 
 void readFiles(Graph* g, std::vector<string>& files)
 {
-     std::cout << "How many files would you like to use to build this graph?" << std::endl;
     string fileNum;
-
+    std::cout << "How many files would you like to use to build this graph? (Enter 0 to use general data)" << std::endl;
     getline(std::cin, fileNum);
     std::cout << std::endl;
 
     while (!isValidNum(fileNum))
     {
-        // display "Invalid Number" in gui
         std::cout << "It seems you didn't enter a valid number, please input a positive number:" << std::endl;
         getline(std::cin, fileNum);
         std::cout << std::endl;
     }
 
-    // remove invalid number msg if present
-    // hide "OK" button
+    if (stoi(fileNum) == 0)
+    {
+        files = { "Apple.csv", "GenghisKhan.csv", "JoeBiden.csv", "KungFuPanda.csv",
+                    "LeBronJames.csv", "Philosophy1.csv", "Philosophy2.csv", "Philosophy3.csv",
+                    "Wikipedia.csv" };
+    }
 
     int numFiles = std::stoi(fileNum);
 
-    // show prompt and box 
     for (int i = 0; i < numFiles; i++)
     {
         string fileName;
@@ -200,6 +223,5 @@ void readFiles(Graph* g, std::vector<string>& files)
         std::cout << std::endl;
         files.push_back(fileName);
     }
-
     g->inputGraph(files);
 }

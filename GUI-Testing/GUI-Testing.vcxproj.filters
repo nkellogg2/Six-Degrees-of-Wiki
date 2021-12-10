@@ -45,5 +45,14 @@
   <ItemGroup>
     <None Include="compare.csv" />
     <None Include="README.md" />
+    <None Include="GenghisKhan.csv" />
+    <None Include="Wikipedia.csv" />
+    <None Include="Philosophy3.csv" />
+    <None Include="Philosophy2.csv" />
+    <None Include="Philosophy1.csv" />
+    <None Include="LeBronJames.csv" />
+    <None Include="KungFuPanda.csv" />
+    <None Include="JoeBiden.csv" />
+    <None Include="Apple.csv" />
   </ItemGroup>
 </Project>

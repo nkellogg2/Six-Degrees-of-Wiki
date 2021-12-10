@@ -1,8 +1,9 @@
 #ifndef WIKIPEDIA_GRAPH_H
 #define WIKIPEDIA_GRAPH_H
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 #include <vector>
+#include <chrono>
 using std::string;
 
 class Graph
@@ -30,35 +31,35 @@ private:
         };
     };
 
-    int inserted;
     int vertices;
+    int mapSize;
     int numLinks;
-    double sizeFactor;
-    Node** graphArray;
-    std::unordered_set<string> pages;
+    std::unordered_map<std::string, Node*> graphArray;
 
     unsigned int hashFunction(string name);
-    void insertHead(string name);
-    int find(string name);
     void deleteNode(Node* n);
 
 
 public:
     Graph();
     ~Graph();
-    int getNumVertices();
-    int getPagesInserted();
+    int getVertices();
     int getNumLinks();
     void inputGraph(std::vector<string> fileNames);
-    std::vector<string> getEdges(string name);
+    string getRandomNode();
+
     void printEdges(string name);
     void printBFSPath(string start, string destination);
-    std::vector<std::pair<int, string>> getBFSPath(string start, string destination);
+    void dijkstras(string start, string destination);
     void bellmanFord(string start, string destination);
+
+    std::vector<string> getEdges(string name);
+    std::vector<string> getBFSPath(string start, string destination);
+    std::vector<std::pair<int, string>> getDijkstrasPath(string start, string destination);
     std::vector<std::pair<int, string>> getBellmanPath(string start, string destination);
 };
 
-// needed renamed function for use in MakeGraph.h without linker errors
+// needed renamed function for use in MakeGraph.h without linker errors TODO: (maybe try and remove after merge)
 bool inline isValidNumber(string num)
 {
     for (int i = 0; i < num.length(); i++)

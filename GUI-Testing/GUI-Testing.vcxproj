@@ -145,8 +145,17 @@
     <Text Include="CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Apple.csv" />
     <None Include="compare.csv" />
+    <None Include="GenghisKhan.csv" />
+    <None Include="JoeBiden.csv" />
+    <None Include="KungFuPanda.csv" />
+    <None Include="LeBronJames.csv" />
+    <None Include="Philosophy1.csv" />
+    <None Include="Philosophy2.csv" />
+    <None Include="Philosophy3.csv" />
     <None Include="README.md" />
+    <None Include="Wikipedia.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

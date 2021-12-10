@@ -254,7 +254,7 @@ namespace GUITesting {
 			// cannot get "Loading" msg to appear before next form
 			
 			g->inputGraph(*files);
-			if (g->getNumVertices() == 0) {
+			if (g->getVertices() == 0) {
 				numFiles++;
 				lbl_emptyGraph->Visible = true;
 				return;
@@ -271,8 +271,10 @@ namespace GUITesting {
 	}
 	private: System::Void btn_generalData_Click(System::Object^ sender, System::EventArgs^ e) {
 		// get names of files for general data stuff
-		// files.push_back(<each file name>)
-		 g->inputGraph(*files);
+		*files = { "Apple.csv", "GenghisKhan.csv", "JoeBiden.csv", "KungFuPanda.csv",
+					"LeBronJames.csv", "Philosophy1.csv", "Philosophy2.csv", "Philosophy3.csv",
+					"Wikipedia.csv" };
+		g->inputGraph(*files);
 		btn_fileNames->Visible = false;
 		lbl_LoadingGraph->Visible = true;
 		lbl_emptyGraph->Visible = false;

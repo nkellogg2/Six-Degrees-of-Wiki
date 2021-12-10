@@ -31,8 +31,8 @@ namespace GUITesting {
 			this->g = g;
 		}
 		void UpdateStats() {
-			lbl_nodeNum->Text = g->getNumVertices().ToString() + lbl_nodeNum->Text;
-			lbl_numPages->Text = g->getPagesInserted().ToString() + lbl_numPages->Text;
+			lbl_nodeNum->Text = g->getVertices().ToString() + lbl_nodeNum->Text;
+			// lbl_numPages->Text = g->getMapSize().ToString() + lbl_numPages->Text;
 			lbl_graphLinks->Text = g->getNumLinks().ToString() + lbl_graphLinks->Text;
 		}
 		
@@ -41,17 +41,18 @@ namespace GUITesting {
 	private: System::Windows::Forms::Button^ btn_findEdges;
 	private: System::Windows::Forms::Label^ lbl_header;
 	private: System::Windows::Forms::Label^ lbl_nodeNum;
-	private: System::Windows::Forms::Label^ lbl_numPages;
+
 	private: System::Windows::Forms::Label^ lbl_graphLinks;
 	private: System::Windows::Forms::Label^ lbl_noPath;
 	private: System::Windows::Forms::Label^ lbl_path;
 	private: System::Windows::Forms::Label^ lbl_pagesBtwn;
 	private: System::Windows::Forms::Label^ lbl_linksBtwn;
 	private: System::Windows::Forms::ListBox^ lb_path;
-	private: System::Windows::Forms::Button^ btn_compareAlgos;
+
 	private: System::Windows::Forms::RadioButton^ rbtn_bellman;
 	private: System::Windows::Forms::RadioButton^ rbtn_dijkstra;
 	private: System::Windows::Forms::Button^ btn_randomPage;
+	private: System::Windows::Forms::Label^ lbl_timeTaken;
 
 	private: System::Windows::Forms::Label^ lbl_noEdges;
 
@@ -111,17 +112,16 @@ namespace GUITesting {
 			this->lbl_noEdges = (gcnew System::Windows::Forms::Label());
 			this->lbl_header = (gcnew System::Windows::Forms::Label());
 			this->lbl_nodeNum = (gcnew System::Windows::Forms::Label());
-			this->lbl_numPages = (gcnew System::Windows::Forms::Label());
 			this->lbl_graphLinks = (gcnew System::Windows::Forms::Label());
 			this->lbl_noPath = (gcnew System::Windows::Forms::Label());
 			this->lbl_path = (gcnew System::Windows::Forms::Label());
 			this->lbl_pagesBtwn = (gcnew System::Windows::Forms::Label());
 			this->lbl_linksBtwn = (gcnew System::Windows::Forms::Label());
 			this->lb_path = (gcnew System::Windows::Forms::ListBox());
-			this->btn_compareAlgos = (gcnew System::Windows::Forms::Button());
 			this->rbtn_bellman = (gcnew System::Windows::Forms::RadioButton());
 			this->rbtn_dijkstra = (gcnew System::Windows::Forms::RadioButton());
 			this->btn_randomPage = (gcnew System::Windows::Forms::Button());
+			this->lbl_timeTaken = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
 			// 
 			// lbl_article1
@@ -220,13 +220,13 @@ namespace GUITesting {
 			// 
 			this->txt_loadEdges->Location = System::Drawing::Point(480, 54);
 			this->txt_loadEdges->Name = L"txt_loadEdges";
-			this->txt_loadEdges->Size = System::Drawing::Size(100, 20);
+			this->txt_loadEdges->Size = System::Drawing::Size(226, 20);
 			this->txt_loadEdges->TabIndex = 9;
 			// 
 			// btn_findEdges
 			// 
 			this->btn_findEdges->BackColor = System::Drawing::Color::OliveDrab;
-			this->btn_findEdges->Location = System::Drawing::Point(601, 52);
+			this->btn_findEdges->Location = System::Drawing::Point(721, 52);
 			this->btn_findEdges->Name = L"btn_findEdges";
 			this->btn_findEdges->Size = System::Drawing::Size(75, 23);
 			this->btn_findEdges->TabIndex = 10;
@@ -238,7 +238,7 @@ namespace GUITesting {
 			// 
 			this->lbl_noEdges->AutoSize = true;
 			this->lbl_noEdges->ForeColor = System::Drawing::Color::Firebrick;
-			this->lbl_noEdges->Location = System::Drawing::Point(691, 57);
+			this->lbl_noEdges->Location = System::Drawing::Point(802, 57);
 			this->lbl_noEdges->Name = L"lbl_noEdges";
 			this->lbl_noEdges->Size = System::Drawing::Size(86, 13);
 			this->lbl_noEdges->TabIndex = 11;
@@ -267,23 +267,12 @@ namespace GUITesting {
 			this->lbl_nodeNum->TabIndex = 13;
 			this->lbl_nodeNum->Text = L" nodes";
 			// 
-			// lbl_numPages
-			// 
-			this->lbl_numPages->AutoSize = true;
-			this->lbl_numPages->Font = (gcnew System::Drawing::Font(L"Modern No. 20", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->lbl_numPages->Location = System::Drawing::Point(31, 103);
-			this->lbl_numPages->Name = L"lbl_numPages";
-			this->lbl_numPages->Size = System::Drawing::Size(131, 24);
-			this->lbl_numPages->TabIndex = 14;
-			this->lbl_numPages->Text = L" pages inserted";
-			// 
 			// lbl_graphLinks
 			// 
 			this->lbl_graphLinks->AutoSize = true;
 			this->lbl_graphLinks->Font = (gcnew System::Drawing::Font(L"Modern No. 20", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(0)));
-			this->lbl_graphLinks->Location = System::Drawing::Point(31, 138);
+			this->lbl_graphLinks->Location = System::Drawing::Point(31, 106);
 			this->lbl_graphLinks->Name = L"lbl_graphLinks";
 			this->lbl_graphLinks->Size = System::Drawing::Size(59, 24);
 			this->lbl_graphLinks->TabIndex = 15;
@@ -348,17 +337,6 @@ namespace GUITesting {
 			this->lb_path->TabIndex = 20;
 			this->lb_path->Visible = false;
 			// 
-			// btn_compareAlgos
-			// 
-			this->btn_compareAlgos->BackColor = System::Drawing::Color::DodgerBlue;
-			this->btn_compareAlgos->Location = System::Drawing::Point(176, 460);
-			this->btn_compareAlgos->Name = L"btn_compareAlgos";
-			this->btn_compareAlgos->Size = System::Drawing::Size(129, 29);
-			this->btn_compareAlgos->TabIndex = 21;
-			this->btn_compareAlgos->Text = L"Compare ";
-			this->btn_compareAlgos->UseVisualStyleBackColor = false;
-			this->btn_compareAlgos->Visible = false;
-			// 
 			// rbtn_bellman
 			// 
 			this->rbtn_bellman->AutoSize = true;
@@ -386,7 +364,7 @@ namespace GUITesting {
 			// btn_randomPage
 			// 
 			this->btn_randomPage->BackColor = System::Drawing::Color::OliveDrab;
-			this->btn_randomPage->Location = System::Drawing::Point(861, 54);
+			this->btn_randomPage->Location = System::Drawing::Point(374, 122);
 			this->btn_randomPage->Name = L"btn_randomPage";
 			this->btn_randomPage->Size = System::Drawing::Size(90, 40);
 			this->btn_randomPage->TabIndex = 24;
@@ -394,23 +372,34 @@ namespace GUITesting {
 			this->btn_randomPage->UseVisualStyleBackColor = false;
 			this->btn_randomPage->Click += gcnew System::EventHandler(this, &SixDegrees::btn_randomPage_Click);
 			// 
+			// lbl_timeTaken
+			// 
+			this->lbl_timeTaken->AutoSize = true;
+			this->lbl_timeTaken->Font = (gcnew System::Drawing::Font(L"Modern No. 20", 15.75F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(0)));
+			this->lbl_timeTaken->Location = System::Drawing::Point(31, 469);
+			this->lbl_timeTaken->Name = L"lbl_timeTaken";
+			this->lbl_timeTaken->Size = System::Drawing::Size(122, 24);
+			this->lbl_timeTaken->TabIndex = 25;
+			this->lbl_timeTaken->Text = L"seconds taken";
+			this->lbl_timeTaken->Visible = false;
+			// 
 			// SixDegrees
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->BackColor = System::Drawing::Color::PowderBlue;
 			this->ClientSize = System::Drawing::Size(1003, 521);
+			this->Controls->Add(this->lbl_timeTaken);
 			this->Controls->Add(this->btn_randomPage);
 			this->Controls->Add(this->rbtn_dijkstra);
 			this->Controls->Add(this->rbtn_bellman);
-			this->Controls->Add(this->btn_compareAlgos);
 			this->Controls->Add(this->lb_path);
 			this->Controls->Add(this->lbl_linksBtwn);
 			this->Controls->Add(this->lbl_pagesBtwn);
 			this->Controls->Add(this->lbl_path);
 			this->Controls->Add(this->lbl_noPath);
 			this->Controls->Add(this->lbl_graphLinks);
-			this->Controls->Add(this->lbl_numPages);
 			this->Controls->Add(this->lbl_nodeNum);
 			this->Controls->Add(this->lbl_header);
 			this->Controls->Add(this->lbl_noEdges);
@@ -437,24 +426,55 @@ namespace GUITesting {
 
 		string art1 = ConvertString(txt_article1->Text);
 		string art2 = ConvertString(txt_article2->Text);
-		std::vector<std::pair<int, string>> pathVec;
 		lb_path->Items->Clear();
 		lbl_pagesBtwn->Visible = false;
 		lbl_pagesBtwn->Text = L" pages";
+		lbl_linksBtwn->Visible = false;
 		lbl_linksBtwn->Text = L" total links between";
-
+		lbl_timeTaken->Visible = false;
+		lbl_timeTaken->Text = L" seconds taken";
+		auto timer = std::chrono::steady_clock::now();
 		if (box_numLinks->Checked) {
-			// use bellman-ford or dijkstra's here
+			// use bellman-ford or dijkstra's here: use vector of pairs to display pages,
+			// weights, and total links btwn
+			std::vector<std::pair<int, string>> pathVecWeighted;
 			if (rbtn_bellman->Checked) {
-				
+				pathVecWeighted = g->getBellmanPath(art1, art2);
 			}
 			else {
+				pathVecWeighted = g->getDijkstrasPath(art1, art2);
+			}
+			if (pathVecWeighted.size() == 0) {
+				// no path found
+				lbl_noPath->Visible = true;
+				return;
+			}
+			else {
+				lbl_noPath->Visible = false;
+				// populate results
+				lbl_path->Visible = true;
+				lbl_pagesBtwn->Visible = true;
+				lbl_pagesBtwn->Text = pathVecWeighted.size().ToString() + lbl_pagesBtwn->Text;
+				lbl_linksBtwn->Visible = true;
+				lbl_linksBtwn->Text = pathVecWeighted[0].first.ToString() + lbl_linksBtwn->Text;
+				lbl_timeTaken->Visible = true;
+				auto end = std::chrono::steady_clock::now();
+				int seconds = std::chrono::duration_cast<std::chrono::seconds>(end - timer).count();
+				lbl_timeTaken->Text = seconds.ToString() + lbl_timeTaken->Text;
 
+				lb_path->BeginUpdate();
+				for (auto i = 0; i < pathVecWeighted.size(); i++) {
+					String^ pgName = gcnew String(pathVecWeighted[i].second.c_str());
+					lb_path->Items->Add(pgName);
+				}
+				lb_path->EndUpdate();
+				lb_path->Visible = true;
 			}
 		}
 		else {
 			lbl_linksBtwn->Visible = false;
 			// use BFS here
+			std::vector<string> pathVec;
 			pathVec = g->getBFSPath(art1, art2);
 			if (pathVec.size() == 0) {
 				// no path found
@@ -467,9 +487,13 @@ namespace GUITesting {
 				lbl_path->Visible = true;
 				lbl_pagesBtwn->Visible = true;
 				lbl_pagesBtwn->Text = pathVec.size().ToString() + lbl_pagesBtwn->Text;
+				lbl_timeTaken->Visible = true;
+				auto end = std::chrono::steady_clock::now();
+				int seconds = std::chrono::duration_cast<std::chrono::seconds>(end - timer).count();
+				lbl_timeTaken->Text = seconds.ToString() + lbl_timeTaken->Text;
 				lb_path->BeginUpdate();
 				for (auto i = 0; i < pathVec.size(); i++) {
-					String^ pgName = gcnew String(pathVec[i].second.c_str());
+					String^ pgName = gcnew String(pathVec[i].c_str());
 					lb_path->Items->Add(pgName);
 				}
 				lb_path->EndUpdate();
@@ -524,7 +548,8 @@ namespace GUITesting {
 	private: System::Void btn_randomPage_Click(System::Object^ sender, System::EventArgs^ e) {
 		// get list of loaded pages
 		// choose random one, verify non-empty link list
-		// txt_loadEdges->Text = chosen page name
+		String^ randNode = gcnew String(g->getRandomNode().c_str());
+		txt_loadEdges->Text = randNode;
 		findEdges_Click();
 	}
 };
